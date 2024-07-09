@@ -48,7 +48,7 @@ const SignUp = () => {
       };
 
     return (
-        <div>
+        <>
             <h1>SIGN UP</h1>
             <form onSubmit={handleSubmit} className="signup-form">
                 <input type="email" placeholder="Enter email address..." value={email} onChange={(e) => {setEmail(e.target.value)}} required/>
@@ -59,7 +59,7 @@ const SignUp = () => {
             <div>
                 <p>Already have an account? <Link to='/login'>Login</Link></p>
             </div>
-        </div>
+        </>
     )
 }
 

@@ -9,6 +9,7 @@ import GetStarted from './pages/GetStarted.jsx'
 import MapPage from './pages/MapPage.jsx'
 import './index.css'
 import { createBrowserRouter, createRoutesFromElements, RouterProvider, Route } from 'react-router-dom'
+import { NextUIProvider } from '@nextui-org/system'
 
 
 const router = createBrowserRouter(
@@ -26,5 +27,8 @@ const router = createBrowserRouter(
 )
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <NextUIProvider>
+    <main className="dark text-foreground bg-background"></main>
+    <RouterProvider router={router} />
+  </NextUIProvider>
 )

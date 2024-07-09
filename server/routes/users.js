@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const firebase = require('firebase/app');
+const dotenv = require('dotenv')
 const getAuth  = require('firebase/auth')
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt')
@@ -10,15 +11,16 @@ const { PrismaClient } = require('@prisma/client')
 const Prisma = new PrismaClient()
 
 const router = express.Router();
+const jwt_secret = process.env.JWT_SECRET
+const session_secret = process.env.SESSION_SECRET
 
-// I faced the same issue as firebase.js with my session and jwt secrets
 function generateToken(userId, email) {
   const payload = { userId, email };
-  const secret = 'your-jwt-secret';
+  const secret = jwt_secret;
   return jwt.sign(payload, secret);
 }
 
-router.post('/users', session({ secret: 'your-session-secret' }), async (req, res) => {
+router.post('/users', session({ secret: session_secret }), async (req, res) => {
   const { uid, username, password, email } = req.body;
   try {
     const existingUser = await Prisma.User.findFirst({
@@ -45,14 +47,14 @@ router.post('/users', session({ secret: 'your-session-secret' }), async (req, re
   }
 });
 
-router.post('/users/login', session({ secret: 'your-session-secret' }), async (req, res) => {
+router.post('/users/login', session({ secret: session_secret }), async (req, res) => {
   const { email, password } = req.body;
   const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
   try {
-    const decodedToken = jwt.verify(token, 'your-jwt-secret');
+    const decodedToken = jwt.verify(token, jwt_secret);
     const userId = decodedToken.userId;
     const user = await Prisma.User.findFirst({ where: { id: userId } });
     if (!user) {

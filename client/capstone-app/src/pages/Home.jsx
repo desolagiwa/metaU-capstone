@@ -17,12 +17,12 @@ const Home = () => {
     }
 
     return (
-        <div>
+        <>
             <h1>HOME</h1>
             <p>Welcome to the home page</p>
             <button onClick={handleLogout}>Logout</button>
             <button onClick={handleClick}>Get Started!</button>
-        </div>
+        </>
     )
 }
 

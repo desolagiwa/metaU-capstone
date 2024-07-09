@@ -64,18 +64,18 @@ const GetStarted = () => {
 
 
     return (
-        <div>
+        <>
             <h2>Where are you? </h2>
             <input placeholder="Enter current address... " type="text" value={currentLocation} onChange={handleCurrentLocationChange} required/>
-            {currentLocation && <SearchResults data={currentData} setCurrentLocation={setCurrentLocation} currentLocation={currentLocation} setCurrentCoordinates={setCurrentCoordinates}/>}
+            {currentLocation && <SearchResults data={currentData} setCurrentLocation={setCurrentLocation} currentLocation={currentLocation} setCurrentCoordinates={setCurrentCoordinates} setCurrentData={setCurrentData}/>}
             <h2>Where do you want to go?</h2>
             <input  placeholder="Enter desired destinstion... " type="text" value={destination} onChange={handleDestinationChange} required/>
-            {destination && <SearchResults data={destinationData} setDestination={setDestination} destination={destination} setDestinationCoordinates={setDestinationCoordinates}/>}
+            {destination && <SearchResults data={destinationData} setDestination={setDestination} destination={destination} setDestinationCoordinates={setDestinationCoordinates} setDestinationData={setDestinationData}/>}
             <Link to={`/map/${currentCoordinates}/${destinationCoordinates}`}>
             <button onClick={handleSubmit}>Let's Go!</button>
             </Link>
 
-        </div>
+        </>
     )
 }
 

@@ -19,3 +19,58 @@ model User {
   email String
   password String
 }
+
+model StopTime {
+  id Int @id @default(autoincrement())
+  tripId Int @map("trip_id")
+  arrivalTime String @map("arrival_time")
+  departureTime String @map("departure_time")
+  stopId Int @map("stop_id")
+  stopSequence Int @map("stop_sequence")
+  pickupType Int @map("pickup_type")
+  dropOffType Int @map("drop_off-type")
+  shapeDistTraveled Float @map("shape_dist-traveled")
+  timepoint Int @map("timepoint")
+
+  @@map("stop_times")
+}
+
+model Trip {
+  id Int @id @default(autoincrement())
+  tripId Int @map("trip_id")
+  routeId String @map("route_id")
+  serviceId Int @map("service_id")
+  tripHeadsign String @map("trip_headsign")
+  directionId Int @map("direction_id")
+  blockId Int @map("block_id")
+  shapeId String @map("shape_id")
+  wheelchairAccessible Int @map("wheelchair_accessible")
+  bikesAllowed Int @map("bikes_allowed")
+
+  @@map("trips")
+}
+
+model Route {
+  id Int @id @default(autoincrement())
+  routeId String @map("route_id")
+  agencyId Int @map("agency_id")
+  routeShortName String @map("route_short_name")
+  routeLongName String @map("route_long_name")
+  routeType Int @map("route_type")
+  routeColor String @map("route_color")
+  routeTextColor String @map("route_text_color")
+
+  @@map("routes")
+}
+
+model Stop {
+  id Int @id @default(autoincrement())
+  stopId Int @map("stop_id")
+  stopCode Int @map("stop_code")
+  stopName String @map("stop_name")
+  stopLat Float @map("stop_lat")
+  stopLon Float @map("stop_lon")
+  wheelchairBoarding Int @map("wheelchair_boarding")
+
+  @@map("stops")
+}
