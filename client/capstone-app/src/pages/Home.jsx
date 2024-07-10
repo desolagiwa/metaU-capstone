@@ -12,13 +12,17 @@ const Home = () => {
         localStorage.removeItem('user')
         navigate('/login')
     }
+    const handleClick = () => {
+        navigate('/get-started')
+    }
 
     return (
-        <div>
+        <>
             <h1>HOME</h1>
             <p>Welcome to the home page</p>
             <button onClick={handleLogout}>Logout</button>
-        </div>
+            <button onClick={handleClick}>Get Started!</button>
+        </>
     )
 }
 

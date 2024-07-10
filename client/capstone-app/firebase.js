@@ -4,10 +4,11 @@ import { getAuth } from "firebase/auth"
 import dotenv from 'dotenv'
 
 
-// I know I ought to have put the apiKey in my .env file, but when I tried to, it always triggered an error.
-// So to unblock myself, and to get my code to work, I left it in here
+
+const apiKey = import.meta.env.VITE_REACT_APP_FIREBASE_KEY
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCBtpeS-sHxmA_taUkklnZCDRBHaMMzuFI",
+  apiKey: apiKey,
   authDomain: "capstone-d738e.firebaseapp.com",
   projectId: "capstone-d738e",
   storageBucket: "capstone-d738e.appspot.com",
