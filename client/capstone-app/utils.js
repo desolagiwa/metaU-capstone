@@ -90,5 +90,69 @@ function midpoint(coord1, coord2) {
   return [midpointLat, midpointLon];
 }
 
+  // Helper function to flatten nested arrays
+function parseRouteData(data) {
+  function flatten(arr) {
+      return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(flatten(val)) : acc.concat(val), []);
+  }
 
-export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint}
+  // Flatten the input data
+  let flattenedData = flatten(data);
+
+  // Helper function to find the index of the first trip that starts at a given stop
+  function findStartIndex(arr, startStopId) {
+      return arr.findIndex(trip => trip.startStopId === startStopId);
+  }
+
+  // Process the flattened data to account for direct and transfer routes
+  let journeys = [];
+  let visitedTrips = new Set();
+
+  flattenedData.forEach(trip => {
+      if (visitedTrips.has(trip.tripId)) {
+          return; // Skip already processed trips
+      }
+
+      let journey = {
+          trips: [],
+          stopIds: [],
+          routeIds: [],
+          coordinates: []
+      };
+
+      let currentTrip = trip;
+      while (currentTrip) {
+          journey.trips.push(currentTrip.tripId);
+          journey.stopIds.push(currentTrip.startStopId, currentTrip.endStopId);
+          journey.routeIds.push(currentTrip.routeId);
+          journey.coordinates.push(
+              { lat: currentTrip.startStopLat, lon: currentTrip.startStopLon },
+              { lat: currentTrip.endStopLat, lon: currentTrip.endStopLon }
+          );
+
+          visitedTrips.add(currentTrip.tripId);
+
+          // Find the next trip that starts at the current trip's end stop
+          let nextIndex = findStartIndex(flattenedData, currentTrip.endStopId);
+          if (nextIndex !== -1 && !visitedTrips.has(flattenedData[nextIndex].tripId)) {
+              currentTrip = flattenedData[nextIndex];
+          } else {
+              currentTrip = null;
+          }
+      }
+
+      // Remove duplicate stop IDs and coordinates
+      journey.stopIds = [...new Set(journey.stopIds)];
+      journey.coordinates = journey.coordinates.filter((coord, index) => {
+          return journey.coordinates.findIndex(c => c.lat === coord.lat && c.lon === coord.lon) === index;
+      });
+
+      journeys.push(journey);
+  });
+
+  return journeys;
+}
+
+
+
+export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData}

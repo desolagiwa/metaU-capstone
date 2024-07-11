@@ -107,7 +107,7 @@ const MapPage = () => {
           routeData={directions}
           currentRadius={currentRadius}
           destinationRadius={destinationRadius}
-          centerCoordinates={centerCoordinates}
+          centerCoordinates={currentCoordArray}
         />
       ) : (
         <BounceLoader />

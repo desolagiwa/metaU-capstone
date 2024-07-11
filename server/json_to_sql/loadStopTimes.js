@@ -17,8 +17,8 @@ async function main() {
       await prisma.stopTime.createMany({
         data: chunk.map((stopTime) => ({
           tripId: stopTime.trip_id,
-          arrivalTime: stopTime.arrival_time,
-          departureTime: stopTime.departure_time,
+          arrivalTime: `${String(stopTime.arrival_time.split(':')[0]).padStart(2, '0')}:${String(stopTime.arrival_time.split(':')[1]).padStart(2, '0')}:${String(stopTime.arrival_time.split(':')[2]).padStart(2, '0')}`,
+          departureTime: `${String(stopTime.departure_time.split(':')[0]).padStart(2, '0')}:${String(stopTime.departure_time.split(':')[1]).padStart(2, '0')}:${String(stopTime.departure_time.split(':')[2]).padStart(2, '0')}`,
           stopId: stopTime.stop_id,
           stopSequence: stopTime.stop_sequence,
           pickupType: stopTime.pickup_type,
