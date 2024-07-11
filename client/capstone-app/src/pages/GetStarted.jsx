@@ -57,7 +57,6 @@ const GetStarted = () => {
     const handleDestinationChange = (event) => {
         setDestination(event.target.value)
         findDestinationAddress(destination)
-        console.log(searchData)
     }
 
 
@@ -71,7 +70,7 @@ const GetStarted = () => {
             <h2>Where do you want to go?</h2>
             <input  placeholder="Enter desired destinstion... " type="text" value={destination} onChange={handleDestinationChange} required/>
             {destination && <SearchResults data={destinationData} setDestination={setDestination} destination={destination} setDestinationCoordinates={setDestinationCoordinates} setDestinationData={setDestinationData}/>}
-            <Link to={`/map/${currentCoordinates}/${destinationCoordinates}`}>
+            <Link to={`/route-options/${currentCoordinates}/${destinationCoordinates}`}>
             <button onClick={handleSubmit}>Let's Go!</button>
             </Link>
 

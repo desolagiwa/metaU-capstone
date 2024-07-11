@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx'
 import Protected from './components/Protected.jsx'
 import GetStarted from './pages/GetStarted.jsx'
 import MapPage from './pages/MapPage.jsx'
+import Routes from './pages/Routes.jsx'
 import './index.css'
 import { createBrowserRouter, createRoutesFromElements, RouterProvider, Route } from 'react-router-dom'
 import { NextUIProvider } from '@nextui-org/system'
@@ -19,6 +20,7 @@ const router = createBrowserRouter(
                     <Route path='login' element={<Login />}/>
                     <Route path='get-started' element={<GetStarted />}/>
                     <Route path='map/:currentCoordinates/:destinationCoordinates' element={<MapPage />}/>
+                    <Route path='route-options/:currentCoordinates/:destinationCoordinates' element={<Routes />}/>
                     <Route path='/' element={<Protected />}>
                       <Route path='/' index element={<Home />}/>
                     </Route>

@@ -51,7 +51,7 @@ function getStopsInPolygon(data, polygon, refPoint) {
   const stopsInPolygon = [];
 
   data.forEach(stop => {
-    const point = [stop.stop_lon, stop.stop_lat];
+    const point = [stop.stopLon, stop.stopLat];
     if (pointInPolygon(point, polygon)) {
       stopsInPolygon.push(stop);
     }
@@ -59,7 +59,7 @@ function getStopsInPolygon(data, polygon, refPoint) {
 
   const result = []
   stopsInPolygon.sort((a, b) => fetchDistance([refPoint, [a.stopLon, a.stopLat]]) - fetchDistance([refPoint, [b.stopLon, b.stopLat]]));
-  result.push(...stopsInPolygon.slice(0, 20));
+  result.push(...stopsInPolygon.slice(0, 10));
 
   return result;
 }
@@ -144,13 +144,13 @@ async function getStopsWithinRadius(stop){
 }
 
 function formatTime(date) {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const seconds = date.getSeconds();
-    return `${hours}:${minutes}:${seconds}`;
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
 }
 
-async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId=0) {
+async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripIds=[0]) {
     const currentTime = new Date();
     const oneHourLater = new Date(currentTime.getTime() + 60 * 60 * 1000);
     const formattedCurrentTime = formatTime(currentTime);
@@ -159,15 +159,12 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
     const startStopTimes = await Prisma.StopTime.findMany({
         where: {
             OR: [
-                { stopId: { in: startStops.map(ss => ss.stopId), not: {in : [visitedStop] } } },
+                { stopId: { in: startStops.map(ss => ss.stopId), not: {in : [visitedStop] } , not: {in: pastTripIds}} },
             ],
             departureTime: {
                 gte: formattedCurrentTime,
                 lte: formattedOneHourLater
             },
-            NOT: [
-                { tripId: pastTripId }
-            ]
         }
     });
 
@@ -182,6 +179,8 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
             }
         }
     });
+
+
 
     let routes = [];
     let prevTripId = 0
@@ -236,22 +235,108 @@ async function getConnectedStops(stop){
 
 }
 
-async function findRoutes(startStops, endStops, currentRoutes){
+async function findRoutes(startStops, endStops, currentRoutes, directTrips){
+  let maxTransfers = 2
+  while (maxTransfers > 0) {
     for (const stop of endStops){
       const connectedStops = await getConnectedStops(stop)
       for (const cstop of connectedStops){
         if (startStops.some(sstop => sstop.stopId === cstop.stopId)){
-          const route =  await findDirectRoutes([cstop], connectedStops)
-          route.push(await findDirectRoutes(connectedStops, endStops))
+          const route =  await findDirectRoutes([cstop], connectedStops, pastTripIds = directTrips)
+          route.push(await findDirectRoutes(connectedStops, endStops, pastTripIds = directTrips))
           currentRoutes.push(route)
         }
       }
     }
-    return currentRoutes
+    maxTransfers --
+  }
+  return currentRoutes
 }
 
 
-router.get('/', async (req, res) => {
+// This function can definitely be cleaner, but for the purpose of unblocking myself, I leaving it for now.
+async function handleTransfers(routes){
+  const updatedRoutes = []
+  for (const route of routes){
+    if (route.length == 1){
+      updatedRoutes.push(route)
+    } else {
+      for (const subRoute of route){
+        if (subRoute.length === 1){
+          let transferStop = 0
+          if (subRoute[0].stops[1]-subRoute[0].stops[0] === 1){
+            transferStop = subRoute[0].stops[0]
+          }else {
+            transferStop = subRoute[0].stops[1]
+          }
+           let currentStop = [0,0]
+          for (const subRoute2 of route){
+            if (subRoute2.length > 1){
+              for (const trip of subRoute2){
+                if (trip[0].stops[0] !== currentStop[0] && trip[0].stops[1] !== currentStop[1]) {
+                  currentStop = trip[0].stops
+                  const initialRoutes = await findDirectRoutes([{stopId: transferStop}], [{stopId: currentStop[0]}])
+                  const subsequentRoutes = await findDirectRoutes([{stopId: currentStop[0]}], [{stopId: currentStop[1]}])
+                  updatedRoutes.push([initialRoutes, subsequentRoutes])
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return updatedRoutes
+}
+
+
+// This function too
+async function getRouteOptions(routes){
+  const routeOptions = []
+  for (const route of routes){
+    console.log(route)
+    if (route.length ===1){
+      const current = route[0]
+      const currentTrip = await Prisma.Trip.findMany({where : {tripId : current.tripId}})
+      const startStop = await Prisma.Stop.findMany({where : {stopId : current.stops[0]}})
+      const endStop = await Prisma.Stop.findMany({where : {stopId : current.stops[1]}})
+      routeOptions.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
+      startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon})
+    }
+    else{
+      const temp = []
+      for (const subRoute of route){
+        if (subRoute.length ===1){
+          const current = subRoute[0]
+          const currentTrip = await Prisma.Trip.findMany({where : {tripId : current.tripId}})
+          const startStop = await Prisma.Stop.findMany({where : {stopId : current.stops[0]}})
+          const endStop = await Prisma.Stop.findMany({where : {stopId : current.stops[1]}})
+          temp.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
+          startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon})
+        }
+        else{
+          const temp2 = []
+          for (const trip of subRoute){
+            if (trip.length ===1){
+              const current = trip[0]
+              const currentTrip = await Prisma.Trip.findMany({where : {tripId : current.tripId}})
+              const startStop = await Prisma.Stop.findMany({where : {stopId : current.stops[0]}})
+              const endStop = await Prisma.Stop.findMany({where : {stopId : current.stops[1]}})
+              temp2.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
+              startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon})
+            }
+          }
+          temp.push(temp2)
+        }
+      }
+      routeOptions.push(temp)
+    }
+  }
+  return routeOptions
+}
+
+
+router.post('/', async (req, res) => {
     const { startCoordinates, endCoordinates } = req.body;
 
     try {
@@ -265,10 +350,14 @@ router.get('/', async (req, res) => {
         const endStops = endPolygon.features ? getStopsInPolygon(stops, endPolygon.features[0].geometry, endCoordinates):[];
 
         const directRoutes = await findDirectRoutes(startStops, endStops)
+        const directTrips = directRoutes.map(route => route[0].tripId);
 
-        const routes = await findRoutes(startStops, endStops, directRoutes)
+        const routes = await findRoutes(startStops, endStops, directRoutes, directTrips)
 
-        res.json(routes);
+        const modifiedRoutes= await handleTransfers(routes)
+        const routeOptions = await getRouteOptions(modifiedRoutes)
+
+        res.json(routeOptions);
       }
     } catch (error) {
       console.error('Error:', error);

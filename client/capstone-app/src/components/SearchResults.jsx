@@ -4,7 +4,6 @@ import {Listbox, ListboxItem} from "@nextui-org/react";
 import { useState } from "react";
 
 const SearchResults = ({ data, setCurrentLocation, setDestination, setCurrentCoordinates, setDestinationCoordinates, setCurrentData, setDestinationData }) => {
-  console.log(data)
   let parsedData = parseSearchData(data)
   const [selectedVariant, setSelectedVariant] = useState("bordered")
   const [selectedColor, setSelectedColor] = useState("secondary")
