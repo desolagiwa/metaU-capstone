@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import SearchResults from "../components/SearchResults";
 import { useNavigate, Link } from "react-router-dom";
+import dotenv from "dotenv"
+
 
 
 const GetStarted = () => {
@@ -13,6 +15,8 @@ const GetStarted = () => {
     const [destinationCoordinates, setDestinationCoordinates] = useState(null)
     const [error, setError] = useState(null)
     const navigate = useNavigate()
+    const apiKey = import.meta.env.VITE_MAP_API_KEY
+
 
 
     const handleSubmit = () => {
@@ -21,7 +25,7 @@ const GetStarted = () => {
     }
     const findCurrentAddress = async (location) => {
         try {
-            const response = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=5b3ce3597851110001cf6248d4d2e47b8dbe429bbfff21f28b793179&text=${location}&boundary.country=USA`, {
+            const response = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${location}&boundary.country=USA`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -36,7 +40,7 @@ const GetStarted = () => {
     }
     const findDestinationAddress = async (location) => {
         try {
-            const response = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=5b3ce3597851110001cf6248d4d2e47b8dbe429bbfff21f28b793179&text=${location}&boundary.country=USA`, {
+            const response = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${apiKey}&text=${location}&boundary.country=USA`, {
               method: 'GET',
               headers: {
                 'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'

@@ -1,120 +1,71 @@
 import React, { useEffect, useState } from "react";
 import MapWithRoute from '../components/MapWithRoute'
 import { useParams } from "react-router-dom";
-import {BounceLoader} from 'react-spinners'
 import { midpoint } from "../../utils";
-import dotenv from "dotenv"
-
+import { useLocation } from 'react-router-dom';
+import { Progress } from "@nextui-org/react";
+import { convertCoordinates } from "../../utils";
 
 const MapPage = () => {
-  const [directions, setDirections] = useState(null)
   const [currentRadius, setCurrentRadius] = useState(null)
   const [destinationRadius, setDestinationRadius] = useState(null)
   const {currentCoordinates, destinationCoordinates} = useParams()
   const [error, setError] = useState(null)
-  const apiKey = import.meta.env.VITE_MAP_API_KEY
   const accept = 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
   const contentType = 'application/json; charset=utf-8'
 
-  function convertCoordinates(coordString) {
-    return coordString.split(',').map(Number);
-  }
+  const location = useLocation();
+  const { directions, data } = location.state || {};
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const fetchDirections = async () => {
-    try {
-      const response = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${currentCoordinates}&end=${destinationCoordinates}`, {
-        method: 'GET',
-        headers: {
-          'Accept': accept
-        },
-      });
-    const data = await response.json();
-    setDirections(data)
-    } catch (error) {
-      console.error(error);
-    }
+  if (!directions || !data) {
+    return <div>No directions or data found</div>;
   }
 
   const currentCoordArray = convertCoordinates(currentCoordinates)
   const destCoordArray = convertCoordinates(destinationCoordinates)
 
+  const handleNext = () => {
+    setCurrentIndex(currentIndex + 1);
+  };
 
-  const fetchCurrentRadius = async () => {
-    try {
-      const response = await fetch('https://api.openrouteservice.org/v2/isochrones/foot-walking', {
-      method: 'POST',
-      headers: {
-        'Accept': accept,
-        'Authorization': apiKey,
-        'Content-Type': contentType
-      },
-      body: JSON.stringify({
-        locations: [currentCoordArray],
-        range: [0, 1],
-        location_type: 'start',
-        range_type: 'distance',
-        units: 'mi'
-      })
-    })
-      console.log('Status:', response.status);
-      const data =  await response.json();
-      setCurrentRadius(data)
-    }
-    catch(error) {
-      console.error('Error:', error);
-    };
-  }
+  const handlePrevious = () => {
+    setCurrentIndex(currentIndex - 1);
+  };
 
-    const fetchDestinationRadius = async () => {
-      try {
-        const response = await fetch('https://api.openrouteservice.org/v2/isochrones/foot-walking', {
-        method: 'POST',
-        headers: {
-          'Accept': accept,
-          'Authorization': apiKey,
-          'Content-Type': contentType
-        },
-        body: JSON.stringify({
-          locations: [destCoordArray],
-          range: [0, 1],
-          location_type: 'start',
-          range_type: 'distance',
-          units: 'mi'
-        })
-      })
-        console.log('Status:', response.status);
-        const data =  await response.json();
-        setDestinationRadius(data)
-      }
-      catch(error) {
-        console.error('Error:', error);
-      };
-    }
-
-  useEffect(() => {
-    fetchDirections();
-    fetchCurrentRadius()
-    fetchDestinationRadius()
-  }, []);
-
-  const centerCoordinates = midpoint(currentCoordArray,destCoordArray)
 
   return (
     <>
-      <div>MAP PAGE</div>
       {directions ? (
-        <MapWithRoute
-          routeData={directions}
-          currentRadius={currentRadius}
-          destinationRadius={destinationRadius}
-          centerCoordinates={currentCoordArray}
-        />
+        <div className="flex">
+          <button onClick={handlePrevious} disabled={currentIndex === 0}>
+              Previous
+            </button>
+          <div className="w-full md:w-1/2 xl:w-2/3 p-4">
+            <MapWithRoute
+              directions={directions}
+              centerCoordinates={currentCoordArray}
+              routeData={data}
+            />
+          </div>
+          <div className="w-full md:w-1/2 xl:w-1/3 p-4">
+            <h2>Instructions</h2>
+            {directions[currentIndex].features[0].properties.segments[0].steps.map((step, index) => (
+              <p key={index}>{step.instruction}</p>
+            ))}
+          </div>
+          <div className="flex justify-between">
+
+            <button onClick={handleNext} disabled={currentIndex === directions.length - 1}>
+              Next
+            </button>
+          </div>
+        </div>
       ) : (
-        <BounceLoader />
+        <Progress size="lg" isIndeterminate aria-label="Loading..." className="max-w-md" />
       )}
     </>
   )
 }
-
 
 export default MapPage

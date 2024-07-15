@@ -22,7 +22,7 @@ const router = createBrowserRouter(
                     <Route path='map/:currentCoordinates/:destinationCoordinates' element={<MapPage />}/>
                     <Route path='route-options/:currentCoordinates/:destinationCoordinates' element={<Routes />}/>
                     <Route path='/' element={<Protected />}>
-                      <Route path='/' index element={<Home />}/>
+                    <Route path='/' index element={<Home />}/>
                     </Route>
                   </Route>
                 )
