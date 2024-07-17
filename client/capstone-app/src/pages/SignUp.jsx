@@ -26,25 +26,25 @@ const SignUp = () => {
     }
 
     const createUserInDatabase = async (user) => {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        try {
-          const response = await fetch('http://localhost:5000/auth/users', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': localStorage.getItem('token'),
-            },
-            body: JSON.stringify({
-              uid: userData.uid,
-              email: email,
-              password: password,
-              username: username
-            })
-          });
-          const data = await response.json();
-        } catch (error) {
-          console.error(error);
-        }
+      const userData = JSON.parse(localStorage.getItem('user'));
+      try {
+        const response = await fetch('http://localhost:5000/auth/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('token'),
+          },
+          body: JSON.stringify({
+            uid: userData.uid,
+            email: email,
+            password: password,
+            username: username
+          })
+        });
+        const data = await response.json();
+      } catch (error) {
+        console.error(error);
+      }
       };
 
     return (

@@ -90,69 +90,113 @@ function midpoint(coord1, coord2) {
   return [midpointLat, midpointLon];
 }
 
-  // Helper function to flatten nested arrays
 function parseRouteData(data) {
-  function flatten(arr) {
-      return arr.reduce((acc, val) => Array.isArray(val) ? acc.concat(flatten(val)) : acc.concat(val), []);
+  let tripMaps = [];
+  const uniqueTrips = new Set();
+
+
+  function processTrip(trip) {
+    const processedTrip = {
+      tripIds: [],
+      tripHeadsign: trip.tripHeadsign,
+      routeId: trip.routeId,
+      startStopId: trip.startStopId,
+	  startStopName: trip.startStopName,
+	  endStopName: trip.endStopName,
+      endStopId: trip.endStopId,
+      startStopCoordinates: [ trip.startStopLon, trip.startStopLat ],
+      endStopCoordinates: [ trip.endStopLon, trip.endStopLat ],
+      transfers: []
+    };
+
+    if (!uniqueTrips.has(trip.tripId)) {
+      processedTrip.tripIds.push(trip.tripId);
+      uniqueTrips.add(trip.tripId);
+    }
+
+    return processedTrip;
   }
 
-  // Flatten the input data
-  let flattenedData = flatten(data);
-
-  // Helper function to find the index of the first trip that starts at a given stop
-  function findStartIndex(arr, startStopId) {
-      return arr.findIndex(trip => trip.startStopId === startStopId);
+  // Helper function to check and merge similar trips
+  function mergeTrips(existingTrip, newTrip) {
+      existingTrip.tripIds.push(...newTrip.tripIds);
+      existingTrip.departureTimes.push(...newTrip.departureTimes);
   }
 
-  // Process the flattened data to account for direct and transfer routes
-  let journeys = [];
-  let visitedTrips = new Set();
-
-  flattenedData.forEach(trip => {
-      if (visitedTrips.has(trip.tripId)) {
-          return; // Skip already processed trips
-      }
-
-      let journey = {
-          trips: [],
-          stopIds: [],
-          routeIds: [],
-          coordinates: []
-      };
-
-      let currentTrip = trip;
-      while (currentTrip) {
-          journey.trips.push(currentTrip.tripId);
-          journey.stopIds.push(currentTrip.startStopId, currentTrip.endStopId);
-          journey.routeIds.push(currentTrip.routeId);
-          journey.coordinates.push(
-              { lat: currentTrip.startStopLat, lon: currentTrip.startStopLon },
-              { lat: currentTrip.endStopLat, lon: currentTrip.endStopLon }
-          );
-
-          visitedTrips.add(currentTrip.tripId);
-
-          // Find the next trip that starts at the current trip's end stop
-          let nextIndex = findStartIndex(flattenedData, currentTrip.endStopId);
-          if (nextIndex !== -1 && !visitedTrips.has(flattenedData[nextIndex].tripId)) {
-              currentTrip = flattenedData[nextIndex];
+  // Recursive function to flatten nested trip data
+  function flattenTrips(data) {
+      data.forEach(item => {
+          if (Array.isArray(item)) {
+              flattenTrips(item);
           } else {
-              currentTrip = null;
+              const processedTrip = processTrip(item);
+              const existingTrip = tripMaps.find(t =>
+                  t.startStopId === processedTrip.startStopId &&
+                  t.endStopId === processedTrip.endStopId &&
+                  t.routeId === processedTrip.routeId &&
+                  t.tripHeadsign === processedTrip.tripHeadsign
+              );
+
+              if (existingTrip) {
+                  mergeTrips(existingTrip, processedTrip);
+              } else {
+                  tripMaps.push(processedTrip);
+              }
           }
-      }
-
-      // Remove duplicate stop IDs and coordinates
-      journey.stopIds = [...new Set(journey.stopIds)];
-      journey.coordinates = journey.coordinates.filter((coord, index) => {
-          return journey.coordinates.findIndex(c => c.lat === coord.lat && c.lon === coord.lon) === index;
       });
+  }
 
-      journeys.push(journey);
-  });
+  function linkTransfers() {
+    const tripsToRemove = [];
 
-  return journeys;
+    tripMaps.forEach(trip => {
+      tripMaps.forEach(possibleTransfer => {
+        if (trip.endStopId === possibleTransfer.startStopId) {
+          if (!trip.transfers.some(t =>
+            t.startStopId === possibleTransfer.startStopId &&
+            t.endStopId === possibleTransfer.endStopId
+          )) {
+            trip.transfers.push(possibleTransfer);
+            tripsToRemove.push(possibleTransfer);
+          }
+        }
+      });
+    });
+
+    tripMaps = tripMaps.filter(trip => !tripsToRemove.includes(trip));
+  }
+
+  // Start processing
+  flattenTrips(data);
+  linkTransfers();
+
+  return tripMaps;
+}
+
+
+function getRandomColor() {
+  const colors = [
+    '#FF0000',
+    '#FF8700',
+    '#FFD300',
+    '#DEFF0A',
+    '#A1FF0A',
+    '#0AFF99',
+    '#0AEFFF',
+    '#147DF5',
+    '#580AFF',
+    '#BE0AFF',
+
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function convertCoordinates(coordString) {
+  return coordString.split(',').map(Number);
 }
 
 
 
-export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData}
+
+
+export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates}
