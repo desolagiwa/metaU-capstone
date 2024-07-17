@@ -58,7 +58,7 @@ function getStopsInPolygon(data, polygon, refPoint) {
   });
 
   const result = []
-  // stopsInPolygon.sort((a, b) => fetchDistance([refPoint, [a.stopLon, a.stopLat]]) - fetchDistance([refPoint, [b.stopLon, b.stopLat]]));
+  stopsInPolygon.sort((a, b) => fetchDistance([refPoint, [a.stopLon, a.stopLat]]) - fetchDistance([refPoint, [b.stopLon, b.stopLat]]));
   result.push(...stopsInPolygon.slice(0, 10));
 
   return result;
@@ -75,7 +75,7 @@ const fetchCurrentRadius = async (startCoordinates) => {
       },
       body: JSON.stringify({
         locations: [startCoordinates],
-        range: [0, 0.5],
+        range: [0, 0.2],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -100,7 +100,7 @@ const fetchDestinationRadius = async ( endCoordinates) => {
     },
     body: JSON.stringify({
         locations: [endCoordinates],
-        range: [0, 0.5],
+        range: [0, 0.2],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -162,8 +162,8 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
                 { stopId: { in: startStops.map(ss => ss.stopId), not: {in : [visitedStop] } , not: {in: pastTripIds}} },
             ],
             departureTime: {
-                gte: formattedCurrentTime,
-                lte: formattedOneHourLater
+              gte: "10:00:00",
+              lte: "11:00:00"
             },
         }
     });
@@ -174,8 +174,8 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
                 { stopId: { in: endStops.map(es => es.stopId)} }
             ],
             departureTime: {
-                gte: formattedCurrentTime,
-                lte: formattedOneHourLater
+                gte: "10:00:00",
+                lte: "11:00:00"
             }
         }
     });
@@ -225,10 +225,8 @@ async function getConnectedStops(stop){
   });
 
   const moreConnectedStops = []
-  connectedStops.forEach( async stop => {
-    const nearbyStops = await getStopsWithinRadius(stop)
-    moreConnectedStops.push(nearbyStops)
-  })
+
+ // There is some missing code here. It had to be taken out because there was too much load on the API
   const allConnectedStops = [...connectedStops, ...moreConnectedStops]
 
   return allConnectedStops
@@ -290,11 +288,10 @@ async function handleTransfers(routes){
 }
 
 
-// This function too
+// This function should use helper functions
 async function getRouteOptions(routes){
   const routeOptions = []
   for (const route of routes){
-    console.log(route)
     if (route.length ===1){
       const current = route[0]
       const currentTrip = await Prisma.Trip.findMany({where : {tripId : current.tripId}})
@@ -303,13 +300,11 @@ async function getRouteOptions(routes){
       const startStopTime = await Prisma.StopTime.findMany({where : {stopId : current.stops[0], tripId: current.tripId}})
       const endStopTime = await Prisma.StopTime.findMany({where : {stopId : current.stops[1], tripId: current.tripId}})
 
-      // Get all stops for the trip
       const stops = await Prisma.StopTime.findMany({
         where: { tripId: current.tripId },
         orderBy: { stopSequence: 'asc' }
       });
 
-      // Get the coordinates of all stops
       const stopCoordinatesPromises = stops.map(async (stop) => {
       const stopDetails = await Prisma.Stop.findUnique({ where: { stopId: stop.stopId } });
       return {
@@ -326,12 +321,12 @@ async function getRouteOptions(routes){
       const endStopSequence = endStopTime[0].stopSequence;
       stopCoordinates = stopCoordinates.filter(stop => stop.stopSequence >= startStopSequence && stop.stopSequence <= endStopSequence);
 
-      // Get the departure times for the start stops
       const departureTimes = startStopTime.map(stopTime => stopTime.departureTime);
+      const arrivalTimes = endStopTime.map(stopTime => stopTime.arrivalTime);
 
       routeOptions.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
         startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-        stopCoordinates, departureTimes})
+        stopCoordinates, departureTimes, arrivalTimes})
     }
     else{
       const temp = []
@@ -349,7 +344,6 @@ async function getRouteOptions(routes){
             orderBy: { stopSequence: 'asc' }
           });
 
-          // Get the coordinates of all stops
           const stopCoordinatesPromises = stops.map(async (stop) => {
             const stopDetails = await Prisma.Stop.findUnique({ where: { stopId: stop.stopId } });
             return {
@@ -366,12 +360,12 @@ async function getRouteOptions(routes){
           const endStopSequence = endStopTime[0].stopSequence;
           stopCoordinates = stopCoordinates.filter(stop => stop.stopSequence >= startStopSequence && stop.stopSequence <= endStopSequence);
 
-          // Get the departure times for the start stops
           const departureTimes = startStopTime.map(stopTime => stopTime.departureTime);
+          const arrivalTimes = endStopTime.map(stopTime => stopTime.arrivalTime);
 
           temp.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
             startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-            stopCoordinates, departureTimes})
+            stopCoordinates, departureTimes, arrivalTimes})
         }
         else{
           const temp2 = []
@@ -389,7 +383,6 @@ async function getRouteOptions(routes){
                 orderBy: { stopSequence: 'asc' }
               });
 
-              // Get the coordinates of all stops
               const stopCoordinatesPromises = stops.map(async (stop) => {
               const stopDetails = await Prisma.Stop.findUnique({ where: { stopId: stop.stopId } });
                 return {
@@ -404,12 +397,12 @@ async function getRouteOptions(routes){
               const startStopSequence = startStopTime[0].stopSequence;
               const endStopSequence = endStopTime[0].stopSequence;
               stopCoordinates = stopCoordinates.filter(stop => stop.stopSequence >= startStopSequence && stop.stopSequence <= endStopSequence);
-              // Get the departure times for the start stops
               const departureTimes = startStopTime.map(stopTime => stopTime.departureTime);
+              const arrivalTimes = endStopTime.map(stopTime => stopTime.arrivalTime);
 
               temp2.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
                 startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-                stopCoordinates, departureTimes})
+                stopCoordinates, departureTimes, arrivalTimes})
             }
           }
           temp.push(temp2)
@@ -430,19 +423,17 @@ router.post('/', async (req, res) => {
       const endPolygon = await fetchDestinationRadius(endCoordinates);
 
       if (startPolygon && endPolygon) {
+        console.log(startPolygon)
         const stops  = await Prisma.Stop.findMany();
-        console.log("START POLYGON: ", startPolygon)
 
         const startStops = startPolygon.features ? getStopsInPolygon(stops, startPolygon.features[0].geometry, startCoordinates):[];
         const endStops = endPolygon.features ? getStopsInPolygon(stops, endPolygon.features[0].geometry, endCoordinates):[];
-        console.log("START STOPS: ", startStops.length)
 
         const directRoutes = await findDirectRoutes(startStops, endStops)
         const directTrips = directRoutes.map(route => route[0].tripId);
-        console.log("DIRECT ROUTES: ", directRoutes)
+        console.log(directRoutes)
 
         const routes = await findRoutes(startStops, endStops, directRoutes, directTrips)
-        // console.log(routes[4])
 
         const modifiedRoutes= await handleTransfers(routes)
         const routeOptions = await getRouteOptions(modifiedRoutes)

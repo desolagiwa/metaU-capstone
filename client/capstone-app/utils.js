@@ -43,7 +43,6 @@ function pointInPolygon(point, polygon) {
     }
   }
 
-
   return inside; // Return true if the point is inside, false otherwise
 }
 
@@ -94,18 +93,20 @@ function parseRouteData(data) {
   let tripMaps = [];
   const uniqueTrips = new Set();
 
-
   function processTrip(trip) {
     const processedTrip = {
       tripIds: [],
       tripHeadsign: trip.tripHeadsign,
       routeId: trip.routeId,
       startStopId: trip.startStopId,
-	  startStopName: trip.startStopName,
-	  endStopName: trip.endStopName,
+      startStopName: trip.startStopName,
+      endStopName: trip.endStopName,
       endStopId: trip.endStopId,
+      stopCoordinates: trip.stopCoordinates,
       startStopCoordinates: [ trip.startStopLon, trip.startStopLat ],
       endStopCoordinates: [ trip.endStopLon, trip.endStopLat ],
+      departureTimes: trip.departureTimes,
+      arrivalTimes: trip.arrivalTimes,
       transfers: []
     };
 
@@ -120,8 +121,9 @@ function parseRouteData(data) {
   // Helper function to check and merge similar trips
   function mergeTrips(existingTrip, newTrip) {
       existingTrip.tripIds.push(...newTrip.tripIds);
-      existingTrip.departureTimes.push(...newTrip.departureTimes);
-  }
+      existingTrip.departureTimes = Array.from(new Set([...existingTrip.departureTimes, ...newTrip.departureTimes]));
+      existingTrip.arrivalTimes = Array.from(new Set([...existingTrip.arrivalTimes, ...newTrip.arrivalTimes]));
+    }
 
   // Recursive function to flatten nested trip data
   function flattenTrips(data) {
@@ -136,7 +138,6 @@ function parseRouteData(data) {
                   t.routeId === processedTrip.routeId &&
                   t.tripHeadsign === processedTrip.tripHeadsign
               );
-
               if (existingTrip) {
                   mergeTrips(existingTrip, processedTrip);
               } else {
@@ -148,7 +149,6 @@ function parseRouteData(data) {
 
   function linkTransfers() {
     const tripsToRemove = [];
-
     tripMaps.forEach(trip => {
       tripMaps.forEach(possibleTransfer => {
         if (trip.endStopId === possibleTransfer.startStopId) {
@@ -162,7 +162,6 @@ function parseRouteData(data) {
         }
       });
     });
-
     tripMaps = tripMaps.filter(trip => !tripsToRemove.includes(trip));
   }
 
@@ -195,8 +194,15 @@ function convertCoordinates(coordString) {
   return coordString.split(',').map(Number);
 }
 
+function getTimeDifference(departureTimes, arrivalTimes){
+  const time1Minutes = parseInt(departureTimes[0].substring(0, 2)) * 60 + parseInt(departureTimes[0].substring(3, 5));
+const time2Minutes = parseInt(arrivalTimes[0].substring(0, 2)) * 60 + parseInt(arrivalTimes[0].substring(3, 5));
+const differenceMinutes = time2Minutes - time1Minutes;
+return differenceMinutes
+}
 
 
 
 
-export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates}
+
+export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates, getTimeDifference}

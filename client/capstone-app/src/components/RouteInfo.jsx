@@ -2,12 +2,18 @@ import React from "react";
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio} from "@nextui-org/react";
 import { useState } from "react"
 import { useNavigate, Link, useParams} from "react-router-dom";
+import { getTimeDifference } from "../../utils";
 
 
 
 const RouteInfo = ({data, directions, isOpen, onOpen, onOpenChange, currentCoordinates, destinationCoordinates}) => {
   const [scrollBehavior, setScrollBehavior] = useState("inside");
   const navigate = useNavigate();
+
+const timeDifference = getTimeDifference(data.departureTimes, data.arrivalTimes)
+
+console.log("data: ", data)
+console.log("directions: ", directions)
 
   return (
         <div className="flex flex-col gap-2">
@@ -25,9 +31,9 @@ const RouteInfo = ({data, directions, isOpen, onOpen, onOpenChange, currentCoord
                   View Trip
                 </ModalHeader>
                 <ModalBody>
-                <h2>Walk {directions[0].features[0].properties.summary.distance} miles to {data.startStopName}</h2>
-                <h2>Ride {directions[1].features[0].properties.summary.distance} miles to {data.endStopName}</h2>
-                <h2>Walk {directions[2].features[0].properties.summary.distance} miles to destination</h2>
+                <h2>Walk {directions[0].features[0].properties.summary.distance} miles to {data.startStopName}    {Math.floor(directions[0].features[0].properties.summary.duration /60)} mins</h2>
+                <h2>Ride {data.stopCoordinates.length} stops to {data.endStopName}   {timeDifference} mins</h2>
+                <h2>Walk {directions[2].features[0].properties.summary.distance} miles to destination     {Math.floor(directions[2].features[0].properties.summary.duration / 60)} mins </h2>
                 </ModalBody>
                 <ModalFooter>
                   <Button color="danger" variant="light" onPress={onClose}>
@@ -49,9 +55,9 @@ const RouteInfo = ({data, directions, isOpen, onOpen, onOpenChange, currentCoord
                   </ModalHeader>
                   <ModalBody>
                   <h2>Walk {directions[0].features[0].properties.summary.distance} miles to {data.startStopName}</h2>
-                  <h2>Ride {directions[1].features[0].properties.summary.distance} miles to {data.transfers[0].endStopName}</h2>
-                  <h2>Ride {directions[2].features[0].properties.summary.distance} miles to {data.endStopName}</h2>
-                  <h2>Walk {directions[2].features[0].properties.summary.distance} miles to destination</h2>
+                  <h2>Ride {data.stopCoordinates.length} stops to {data.transfers[0].startStopName}</h2>
+                  <h2>Ride {data.transfers[0].stopCoordinates.length} stops to {data.transfers[0].endStopName}</h2>
+                  <h2>Walk {directions[3].features[0].properties.summary.distance} miles to destination</h2>
                   </ModalBody>
                   <ModalFooter>
                     <Button color="danger" variant="light" onPress={onClose}>
