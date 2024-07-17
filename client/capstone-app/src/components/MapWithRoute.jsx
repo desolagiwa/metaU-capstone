@@ -16,7 +16,7 @@ const MapWithRoute = ({ routeData, directions, centerCoordinates}) => {
   };
 
   return (
-    <MapContainer center={[-90.071533, 29.951065]} zoom={15} style={{ height: '60vh', width: '100vh' }}>
+    <MapContainer center={centerCoordinates} zoom={13} style={{ height: '60vh', width: '100vh' }}>
       <TileLayer
         url="https://b.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

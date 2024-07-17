@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import MapWithRoute from '../components/MapWithRoute'
 import "../styles/MapPage.css"
-import { useParams } from "react-router-dom";
 import { midpoint } from "../../utils";
 import { useLocation } from 'react-router-dom';
 import { CircularProgress } from "@nextui-org/react";
@@ -11,23 +10,17 @@ import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
 const MapPage = () => {
   const [currentRadius, setCurrentRadius] = useState(null)
   const [destinationRadius, setDestinationRadius] = useState(null)
-  const {currentCoordinates, destinationCoordinates} = useParams()
   const [error, setError] = useState(null)
   const accept = 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
   const contentType = 'application/json; charset=utf-8'
 
   const location = useLocation();
-  const { directions, data } = location.state || {};
+  const { directions, data, currentCoordinates, destinationCoordinates } = location.state || {};
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  console.log("data: ", data)
 
   if (!directions || !data) {
     return <div>No directions or data found</div>;
   }
-
-  const currentCoordArray = convertCoordinates(currentCoordinates)
-  const destCoordArray = convertCoordinates(destinationCoordinates)
 
   const handleNext = () => {
     setCurrentIndex(currentIndex === data.length - 1 ? 0 : currentIndex + 1);
@@ -46,7 +39,7 @@ const MapPage = () => {
           <div className="w-full md:w-1/2 xl:w-2/3 p-4">
             <MapWithRoute
               directions={directions}
-              centerCoordinates={currentCoordArray}
+              centerCoordinates={[currentCoordinates[1],currentCoordinates[0]]}
               routeData={data}
             />
           </div>

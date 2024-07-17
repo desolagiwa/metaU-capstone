@@ -434,9 +434,11 @@ router.post('/', async (req, res) => {
         console.log(directRoutes)
 
         const routes = await findRoutes(startStops, endStops, directRoutes, directTrips)
+        console.log(routes.length)
 
         const modifiedRoutes= await handleTransfers(routes)
         const routeOptions = await getRouteOptions(modifiedRoutes)
+        console.log(routeOptions)
 
         res.json(routeOptions);
       }
