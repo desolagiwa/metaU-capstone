@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import RouteCard from "../components/RouteCard";
 import { parseRouteData, convertCoordinates } from "../../utils";
-import { Progress } from "@nextui-org/react";
+import { CircularProgress } from "@nextui-org/react";
+import data from '../../../data'
 
 
 const Routes = () => {
@@ -33,6 +34,7 @@ const Routes = () => {
                 throw new Error('Failed to fetch routes');
             }
             const data = await response.json();
+            console.log("FRESH FROM CALL: ", data)
             setRouteOptions(data);
             const parsedData = parseRouteData(data);
             setRouteData(parsedData);
@@ -47,18 +49,13 @@ const Routes = () => {
 
     useEffect(() => {
         fetchRouteOptions();
-        console.log(routeData)
     }, [currentCoordinates, destinationCoordinates]);
+
 
     return (
         <>
             {loading ? (
-              <Progress
-              size="lg"
-              isIndeterminate
-              aria-label="Loading..."
-              className="max-w-md"
-              />
+             <CircularProgress label="Loading..." />
               ) : error ? (
                 <div>Error: {error}</div>
             ) : (
@@ -76,6 +73,7 @@ const Routes = () => {
                             startStopCoordinates={routeOption.startStopCoordinates}
                             endStopCoordinates={routeOption.endStopCoordinates}
                             transfers = {routeOption.transfers}
+                            stopCoordinates ={ routeOption.stopCoordinates}
                             data = {routeOption}
                             currentCoordinates = {startCoordArray}
                             destinationCoordinates = {endCoordArray}

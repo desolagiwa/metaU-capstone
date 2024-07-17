@@ -6,11 +6,12 @@ import { useState, useEffect } from "react";
 
 
 
-const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, startStopCoordinates, startStopName, endStopName, endStopCoordinates, transfers, data, currentCoordinates, destinationCoordinates}) => {
+const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, startStopCoordinates, startStopName, endStopName, endStopCoordinates, transfers, data, currentCoordinates, destinationCoordinates, stopCoordinates}) => {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [tripDetails, setTripDetails] = useState(null)
     const apiKey = import.meta.env.VITE_MAP_API_KEY
 
+    // console.log("data in routeCrad", data)
 
     const fetchWalkingDirections = async (startCoordinates, endCoordinates) => {
         const url = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson'
@@ -35,13 +36,18 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
         }
     };
 
-    const fetchDrivingDirections = async (startCoordinates, endCoordinates) => {
+    const fetchDrivingDirections = async (stopCoordinates) => {
+        function parseStopCoordinates(stopCoordinates) {
+            return stopCoordinates.map(stop => stop.coordinates);
+          }
+
+          const coordinates = parseStopCoordinates(stopCoordinates)
         const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
         try {
             const response = await fetch(url, {
             method: 'POST',
             body: JSON.stringify({
-                coordinates: [startCoordinates, endCoordinates],
+                coordinates: coordinates,
                 units: 'mi'
             }),
             headers: {
@@ -62,15 +68,15 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
         const tripDetails = []
         if (transfers.length === 0){
             const initialWalkingRoute = await fetchWalkingDirections(currentCoordinates, startStopCoordinates)
-            const firstDrivingRoute = await fetchDrivingDirections(startStopCoordinates, endStopCoordinates)
+            const firstDrivingRoute = await fetchDrivingDirections(stopCoordinates)
             const finalWalkingRoute = await fetchWalkingDirections(endStopCoordinates, destinationCoordinates)
             tripDetails.push(initialWalkingRoute)
             tripDetails.push(firstDrivingRoute)
             tripDetails.push(finalWalkingRoute)
         } else {
             const initialWalkingRoute = await fetchWalkingDirections(currentCoordinates, startStopCoordinates)
-            const firstDrivingRoute = await fetchDrivingDirections(startStopCoordinates, endStopCoordinates)
-            const secondDrivingRoute = await fetchDrivingDirections(endStopCoordinates, transfers[0].endStopCoordinates)
+            const firstDrivingRoute = await fetchDrivingDirections(stopCoordinates)
+            const secondDrivingRoute = await fetchDrivingDirections(transfers[0].stopCoordinates)
             const finalWalkingRoute = await fetchWalkingDirections(transfers[0].endStopCoordinates, destinationCoordinates)
             tripDetails.push(initialWalkingRoute)
             tripDetails.push(firstDrivingRoute)

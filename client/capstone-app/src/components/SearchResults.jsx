@@ -7,34 +7,35 @@ const SearchResults = ({ data, setCurrentLocation, setDestination, setCurrentCoo
   let parsedData = parseSearchData(data)
   const [selectedVariant, setSelectedVariant] = useState("bordered")
   const [selectedColor, setSelectedColor] = useState("secondary")
+  const [seeResults, setSeeResults] = useState(true)
 
   if (setCurrentLocation) {
     return (
       <div className="flex flex-col gap-4">
-        <Listbox
-            aria-label="Listbox Variants"
-            color={selectedColor}
-            variant={selectedVariant}>
+      {seeResults && <Listbox
+          aria-label="Listbox Variants"
+          color={selectedColor}
+          variant={selectedVariant}>
 
-            {parsedData.map((item) => (
-              <ListboxItem onClick={() => {setCurrentLocation(item.address); setCurrentCoordinates(item.coordinates)}}>{item.address}</ListboxItem>
-            ))}
-          </Listbox>
+          {parsedData.map((item) => (
+            <ListboxItem onClick={() => {setCurrentLocation(item.address); setCurrentCoordinates(item.coordinates); setSeeResults(false)}}>{item.address}</ListboxItem>
+          ))}
+        </Listbox>}
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <Listbox
+      {seeResults && <Listbox
           aria-label="Listbox Variants"
           color={selectedColor}
           variant={selectedVariant}>
 
           {parsedData.map((item) => (
-            <ListboxItem onClick={() => {setDestination(item.address); setDestinationCoordinates(item.coordinates)}}>{item.address}</ListboxItem>
+            <ListboxItem onClick={() => {setDestination(item.address); setDestinationCoordinates(item.coordinates); setSeeResults(false)}}>{item.address}</ListboxItem>
           ))}
-        </Listbox>
+        </Listbox>}
     </div>
   );
 }
