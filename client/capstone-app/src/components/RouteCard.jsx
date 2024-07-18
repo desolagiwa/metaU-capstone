@@ -11,7 +11,6 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
     const [tripDetails, setTripDetails] = useState(null)
     const apiKey = import.meta.env.VITE_MAP_API_KEY
 
-    // console.log("data in routeCrad", data)
 
     const fetchWalkingDirections = async (startCoordinates, endCoordinates) => {
         const url = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson'
@@ -88,8 +87,7 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
 
     useEffect(() => {
        getTripDetails()
-      }, []);
-
+    }, []);
 
 
     return (
@@ -97,7 +95,7 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
        { transfers.length > 0 ?
        (<div>
             <div>{tripHeadsign} --- {transfers[0].tripHeadsign}</div>
-            <div>{routeId} -- {transfers[0].routeId}</div>
+            <div>{routeId} --- {transfers[0].routeId}</div>
             <Button onPress={onOpen} isOpen={isOpen} onOpenChange={onOpenChange}>See Trip Details</Button>
             <RouteInfo directions={tripDetails} isOpen={isOpen} onOpenChange={onOpenChange} data = {data} currentCoordinates={currentCoordinates} destinationCoordinates={destinationCoordinates}/>
        </div>):

@@ -201,8 +201,11 @@ const differenceMinutes = time2Minutes - time1Minutes;
 return differenceMinutes
 }
 
+function encodeUrlParams(params){
+  return `startLat%3A${params[0][0]}%2CstartLon%3A${params[0][1]}/endLat%3A${params[1][0]}%2CendLon%3A${params[1][1]}`
+}
 
 
 
 
-export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates, getTimeDifference}
+export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates, getTimeDifference, encodeUrlParams}
