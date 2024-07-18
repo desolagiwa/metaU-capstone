@@ -3,16 +3,15 @@ import MapWithRoute from '../components/MapWithRoute'
 import "../styles/MapPage.css"
 import { midpoint } from "../../utils";
 import { useLocation } from 'react-router-dom';
-import { CircularProgress } from "@nextui-org/react";
+import { CircularProgress, useDisclosure} from "@nextui-org/react";
 import { convertCoordinates } from "../../utils";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
+import Popup from "../components/Popup";
 
 const MapPage = () => {
-  const [currentRadius, setCurrentRadius] = useState(null)
-  const [destinationRadius, setDestinationRadius] = useState(null)
   const [error, setError] = useState(null)
-  const accept = 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8'
-  const contentType = 'application/json; charset=utf-8'
+  const [showPopup, setShowPopup] = useState(false);
+  const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
   const location = useLocation();
   const { directions, data, currentCoordinates, destinationCoordinates } = location.state || {};
@@ -29,6 +28,13 @@ const MapPage = () => {
   const handlePrevious = () => {
     setCurrentIndex(currentIndex === 0 ? data.length - 1 : currentIndex - 1);
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setShowPopup(true);
+    }, directions[0].features[0].properties.summary.duration * 1000);
+    onOpen()
+  }, []);
 
 
   return (
@@ -65,9 +71,11 @@ const MapPage = () => {
               })}
             </span>
           </div>
+          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange}  style={{ zIndex: 10000 }}/>}
         </div>
       ) : (
         <CircularProgress label="Loading..." />      )}
+
     </>
   )
 }

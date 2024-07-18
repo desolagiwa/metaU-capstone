@@ -34,7 +34,6 @@ const Routes = () => {
                 throw new Error('Failed to fetch routes');
             }
             const data = await response.json();
-            console.log("FRESH FROM CALL: ", data)
             setRouteOptions(data);
             const parsedData = parseRouteData(data);
             setRouteData(parsedData);
