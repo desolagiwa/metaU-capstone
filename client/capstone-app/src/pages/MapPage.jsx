@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import MapWithRoute from '../components/MapWithRoute'
 import "../styles/MapPage.css"
 import { midpoint } from "../../utils";
-import { useLocation } from 'react-router-dom';
-import { CircularProgress, useDisclosure} from "@nextui-org/react";
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CircularProgress, useDisclosure, Button} from "@nextui-org/react";
 import { convertCoordinates } from "../../utils";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
 import Popup from "../components/Popup";
@@ -16,6 +16,8 @@ const MapPage = () => {
   const location = useLocation();
   const { directions, data, currentCoordinates, destinationCoordinates } = location.state || {};
   const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate()
+
 
   if (!directions || !data) {
     return <div>No directions or data found</div>;
@@ -32,10 +34,13 @@ const MapPage = () => {
   useEffect(() => {
     setTimeout(() => {
       setShowPopup(true);
-    }, directions[0].features[0].properties.summary.duration * 1000);
+    }, 5000)
     onOpen()
   }, []);
 
+  const handleExit = () => {
+    navigate('/')
+  }
 
   return (
     <>
@@ -70,8 +75,11 @@ const MapPage = () => {
                 );
               })}
             </span>
+            <Button onClick={handleExit}>Leave trip</Button>
+            <Button>Report delay</Button>
           </div>
-          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange}  style={{ zIndex: 10000 }}/>}
+          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange}  style={{ zIndex: 10000 }} tripData={data}/>}
+
         </div>
       ) : (
         <CircularProgress label="Loading..." />      )}

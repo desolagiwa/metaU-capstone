@@ -36,8 +36,7 @@ model StopTime {
 }
 
 model Trip {
-  id Int @id @default(autoincrement())
-  tripId Int @map("trip_id")
+  tripId Int @id @map("trip_id")
   routeId String @map("route_id")
   serviceId Int @map("service_id")
   tripHeadsign String @map("trip_headsign")
@@ -46,6 +45,7 @@ model Trip {
   shapeId String @map("shape_id")
   wheelchairAccessible Int @map("wheelchair_accessible")
   bikesAllowed Int @map("bikes_allowed")
+  isDelayed Boolean @default(false)
 
   @@map("trips")
 }

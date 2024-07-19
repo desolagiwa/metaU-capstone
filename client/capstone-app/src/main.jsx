@@ -19,6 +19,7 @@ const router = createBrowserRouter(
                     <Route path='signup' element={<SignUp />}/>
                     <Route path='login' element={<Login />}/>
                     <Route path='get-started' element={<GetStarted />}/>
+                    <Route path='change-trip' element={<GetStarted />}/>
                     <Route path='map/:currentCoordinates/:destinationCoordinates' element={<MapPage />}/>
                     <Route path='route-options/:currentCoordinates/:destinationCoordinates' element={<Routes />}/>
                     <Route path='/' element={<Protected />}>
