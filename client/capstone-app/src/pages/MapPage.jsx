@@ -78,7 +78,7 @@ const MapPage = () => {
             <Button onClick={handleExit}>Leave trip</Button>
             <Button>Report delay</Button>
           </div>
-          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange}  style={{ zIndex: 10000 }}/>}
+          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange}  style={{ zIndex: 10000 }} tripData={data}/>}
 
         </div>
       ) : (
