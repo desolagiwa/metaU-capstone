@@ -10,6 +10,7 @@ const app = express();
 
 const userRoutes = require('./routes/users')
 const tripRoutes = require('./routes/routes')
+const tripInfoRoutes = require('./routes/trip')
 const session_secret = process.env.SESSION_SECRET
 
 const port = process.env.port || 3000
@@ -44,6 +45,7 @@ Prisma.$connect()
 
 app.use('/auth', userRoutes)
 app.use('/get-routes', tripRoutes)
+app.use('/delay-trip', tripInfoRoutes)
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`)

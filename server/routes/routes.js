@@ -162,8 +162,8 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
                 { stopId: { in: startStops.map(ss => ss.stopId), not: {in : [visitedStop] } , not: {in: pastTripIds}} },
             ],
             departureTime: {
-              gte: "10:00:00",
-              lte: "11:00:00"
+              gte: formattedCurrentTime,
+              lte: formattedOneHourLater
             },
         }
     });
@@ -174,8 +174,8 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
                 { stopId: { in: endStops.map(es => es.stopId)} }
             ],
             departureTime: {
-                gte: "10:00:00",
-                lte: "11:00:00"
+                gte: formattedCurrentTime,
+                lte: formattedOneHourLater
             }
         }
     });
@@ -423,7 +423,6 @@ router.post('/', async (req, res) => {
       const endPolygon = await fetchDestinationRadius(endCoordinates);
 
       if (startPolygon && endPolygon) {
-        console.log(startPolygon)
         const stops  = await Prisma.Stop.findMany();
 
         const startStops = startPolygon.features ? getStopsInPolygon(stops, startPolygon.features[0].geometry, startCoordinates):[];
@@ -431,14 +430,11 @@ router.post('/', async (req, res) => {
 
         const directRoutes = await findDirectRoutes(startStops, endStops)
         const directTrips = directRoutes.map(route => route[0].tripId);
-        console.log(directRoutes)
 
         const routes = await findRoutes(startStops, endStops, directRoutes, directTrips)
-        console.log(routes.length)
 
         const modifiedRoutes= await handleTransfers(routes)
         const routeOptions = await getRouteOptions(modifiedRoutes)
-        console.log(routeOptions)
 
         res.json(routeOptions);
       }

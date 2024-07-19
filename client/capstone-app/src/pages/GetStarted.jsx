@@ -18,7 +18,6 @@ const GetStarted = () => {
     const apiKey = import.meta.env.VITE_MAP_API_KEY
 
 
-
     const handleSubmit = () => {
         console.log(currentLocation, ", ", destination)
         console.log(currentCoordinates, ", ", destinationCoordinates)
@@ -62,8 +61,6 @@ const GetStarted = () => {
         setDestination(event.target.value)
         findDestinationAddress(destination)
     }
-
-
 
 
     return (
