@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, RadioGroup, Radio } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
 
-const Popup = ({ isOpen, onOpenChange }) => {
+const Popup = ({ isOpen, onOpenChange, tripData }) => {
   const navigate = useNavigate();
   const [action, setAction] = useState("");
   const [showChangeConfirmation, setShowChangeConfirmation] = useState(false);
   const [showReportConfirmation, setShowReportConfirmation] = useState(false);
   const [showBusSelection, setShowBusSelection] = useState(false);
+  const [selectedBus, setSelectedBus] = useState("");
 
   const handleContinue = () => {
     if (action === "change-trip") {
@@ -23,21 +24,17 @@ const Popup = ({ isOpen, onOpenChange }) => {
     switch (action) {
       case "continue":
         onOpenChange(false);
-        console.log("Yes!");
         break;
       case "change-trip":
-        console.log("Change trip");
         navigate("/change-trip");
         break;
       case "delay-trip":
         setShowReportConfirmation(false);
         setShowBusSelection(true);
-        console.log("Bus late!");
         break;
       default:
         console.log("Unknown selection");
     }
-
     setShowChangeConfirmation(false);
   };
 
@@ -50,10 +47,52 @@ const Popup = ({ isOpen, onOpenChange }) => {
     }
   };
 
-  const handleBusSelection = (bus) => {
-    console.log(`Bus selected: ${bus}`);
+  const handleBusSelectionChange = (bus) => {
+    setSelectedBus(bus);
+  };
+
+  const handleReport = () => {
+    fetch(`http://localhost:5000/delay-trip/${selectedBus}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({isDelayed: true }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+
     setShowBusSelection(false);
     onOpenChange(false);
+  };
+
+  const renderBusOptions = () => {
+    const busOptions = [];
+
+    // Add the main trip bus
+    busOptions.push(
+      <Radio value={tripData.tripId}>
+        {tripData.routeId}: {tripData.tripHeadsign}
+      </Radio>
+    );
+
+    // Add transfer buses
+    if (tripData.transfers && tripData.transfers.length > 0) {
+      tripData.transfers.forEach((transfer) => {
+        busOptions.push(
+          <Radio value={transfer.tripId}>
+            {transfer.routeId}: {transfer.tripHeadsign}
+          </Radio>
+        );
+      });
+    }
+
+    return busOptions;
   };
 
   return (
@@ -141,15 +180,16 @@ const Popup = ({ isOpen, onOpenChange }) => {
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Select Bus</ModalHeader>
           <ModalBody>
-            <RadioGroup color="secondary" onChange={(e) => handleBusSelection(e.target.value)}>
-              <Radio value="bus-1">Bus 1</Radio>
-              <Radio value="bus-2">Bus 2</Radio>
-              <Radio value="bus-3">Bus 3</Radio>
+            <RadioGroup color="secondary" onChange={(e) => handleBusSelectionChange(e.target.value)}>
+              {renderBusOptions()}
             </RadioGroup>
           </ModalBody>
           <ModalFooter>
             <Button color="danger" variant="light" onPress={() => setShowBusSelection(false)}>
               Cancel
+            </Button>
+            <Button color="secondary" onPress={handleReport}>
+              Report
             </Button>
           </ModalFooter>
         </ModalContent>
