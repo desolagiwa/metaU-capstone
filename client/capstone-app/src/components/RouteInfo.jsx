@@ -82,9 +82,30 @@ const RouteInfo = ({ data, directions, isOpen, onOpenChange, currentCoordinates,
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>Close</Button>
-                <Button color="secondary" onClick={() => navigate(`/map/${encodeUrlParams([currentCoordinates,destinationCoordinates])}`, { state: { directions, data, currentCoordinates, destinationCoordinates } })}>
-                  Start Trip
-                </Button>
+                {data.isDelayed || data.transfers.isDelayed ?
+                  ( <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <ModalContent>
+                      {(onClose) => (
+                        <>
+                          <ModalHeader className="flex flex-col gap-1" color="danger">Delayed Bus!</ModalHeader>
+                          <ModalBody>
+                            <p>Are you sure you want to start this trip?</p>
+                          </ModalBody>
+                          <ModalFooter>
+                            <Button color="danger" variant="light" onPress={onClose}>
+                              Cancel
+                            </Button>
+                            <Button color="secondary" onPress={onClose}>
+                              Yes
+                            </Button>
+                          </ModalFooter>
+                        </>
+                      )}
+                    </ModalContent>
+                  </Modal>) :
+                  (<Button color="secondary" onClick={() => navigate(`/map/${encodeUrlParams([currentCoordinates,destinationCoordinates])}`, { state: { directions, data, currentCoordinates, destinationCoordinates } })}>
+                    Start Trip
+                  </Button>)}
               </ModalFooter>
             </>
           )}

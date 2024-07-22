@@ -95,7 +95,7 @@ function parseRouteData(data) {
 
   function processTrip(trip) {
     const processedTrip = {
-      tripIds: [],
+      tripIds: [trip.tripId],
       tripHeadsign: trip.tripHeadsign,
       routeId: trip.routeId,
       startStopId: trip.startStopId,
@@ -103,52 +103,51 @@ function parseRouteData(data) {
       endStopName: trip.endStopName,
       endStopId: trip.endStopId,
       stopCoordinates: trip.stopCoordinates,
-      startStopCoordinates: [ trip.startStopLon, trip.startStopLat ],
-      endStopCoordinates: [ trip.endStopLon, trip.endStopLat ],
+      startStopCoordinates: [trip.startStopLon, trip.startStopLat],
+      endStopCoordinates: [trip.endStopLon, trip.endStopLat],
       departureTimes: trip.departureTimes,
       arrivalTimes: trip.arrivalTimes,
+      isDelayed: trip.isDelayed,
       transfers: []
     };
-
-    if (!uniqueTrips.has(trip.tripId)) {
-      processedTrip.tripIds.push(trip.tripId);
-      uniqueTrips.add(trip.tripId);
-    }
 
     return processedTrip;
   }
 
   // Helper function to check and merge similar trips
   function mergeTrips(existingTrip, newTrip) {
-      existingTrip.tripIds.push(...newTrip.tripIds);
-      existingTrip.departureTimes = Array.from(new Set([...existingTrip.departureTimes, ...newTrip.departureTimes]));
-      existingTrip.arrivalTimes = Array.from(new Set([...existingTrip.arrivalTimes, ...newTrip.arrivalTimes]));
-    }
+    existingTrip.tripIds = Array.from(new Set([...existingTrip.tripIds, ...newTrip.tripIds]))
+    existingTrip.departureTimes = Array.from(new Set([...existingTrip.departureTimes, ...newTrip.departureTimes]));
+    existingTrip.arrivalTimes = Array.from(new Set([...existingTrip.arrivalTimes, ...newTrip.arrivalTimes]));
+    existingTrip.isDelayed =  existingTrip.isDelayed || newTrip.isDelayed
+  }
 
   // Recursive function to flatten nested trip data
   function flattenTrips(data) {
-      data.forEach(item => {
-          if (Array.isArray(item)) {
-              flattenTrips(item);
-          } else {
-              const processedTrip = processTrip(item);
-              const existingTrip = tripMaps.find(t =>
-                  t.startStopId === processedTrip.startStopId &&
-                  t.endStopId === processedTrip.endStopId &&
-                  t.routeId === processedTrip.routeId &&
-                  t.tripHeadsign === processedTrip.tripHeadsign
-              );
-              if (existingTrip) {
-                  mergeTrips(existingTrip, processedTrip);
-              } else {
-                  tripMaps.push(processedTrip);
-              }
-          }
-      });
+    data.forEach(item => {
+      if (Array.isArray(item)) {
+        flattenTrips(item);
+      } else {
+        const processedTrip = processTrip(item);
+        const existingTrip = tripMaps.find(t =>
+          t.startStopId === processedTrip.startStopId &&
+          t.endStopId === processedTrip.endStopId &&
+          t.routeId === processedTrip.routeId &&
+          t.tripHeadsign === processedTrip.tripHeadsign
+        );
+
+        if (existingTrip) {
+          mergeTrips(existingTrip, processedTrip);
+        } else {
+          tripMaps.push(processedTrip);
+        }
+      }
+    });
   }
 
   function linkTransfers() {
     const tripsToRemove = [];
+
     tripMaps.forEach(trip => {
       tripMaps.forEach(possibleTransfer => {
         if (trip.endStopId === possibleTransfer.startStopId) {
@@ -156,12 +155,13 @@ function parseRouteData(data) {
             t.startStopId === possibleTransfer.startStopId &&
             t.endStopId === possibleTransfer.endStopId
           )) {
-            trip.transfers.push(possibleTransfer);
+            trip.transfers.push({ ...possibleTransfer });  // Ensure a new object is created for the transfer
             tripsToRemove.push(possibleTransfer);
           }
         }
       });
     });
+
     tripMaps = tripMaps.filter(trip => !tripsToRemove.includes(trip));
   }
 

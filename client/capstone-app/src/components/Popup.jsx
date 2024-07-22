@@ -10,6 +10,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
   const [showBusSelection, setShowBusSelection] = useState(false);
   const [selectedBus, setSelectedBus] = useState("");
 
+
   const handleContinue = () => {
     if (action === "change-trip") {
       setShowChangeConfirmation(true);
@@ -53,7 +54,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
 
   const handleReport = () => {
     fetch(`http://localhost:5000/delay-trip/${selectedBus}`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -76,7 +77,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
 
     // Add the main trip bus
     busOptions.push(
-      <Radio value={tripData.tripId}>
+      <Radio value={tripData.tripIds[0]}>
         {tripData.routeId}: {tripData.tripHeadsign}
       </Radio>
     );
@@ -85,7 +86,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
     if (tripData.transfers && tripData.transfers.length > 0) {
       tripData.transfers.forEach((transfer) => {
         busOptions.push(
-          <Radio value={transfer.tripId}>
+          <Radio value={transfer.tripIds[0]}>
             {transfer.routeId}: {transfer.tripHeadsign}
           </Radio>
         );
@@ -188,7 +189,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
             <Button color="danger" variant="light" onPress={() => setShowBusSelection(false)}>
               Cancel
             </Button>
-            <Button color="secondary" onPress={handleReport}>
+            <Button color="secondary" onPress={() => handleReport()}>
               Report
             </Button>
           </ModalFooter>

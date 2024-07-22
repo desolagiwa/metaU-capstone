@@ -75,7 +75,7 @@ const fetchCurrentRadius = async (startCoordinates) => {
       },
       body: JSON.stringify({
         locations: [startCoordinates],
-        range: [0, 0.2],
+        range: [0, 0.5],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -100,7 +100,7 @@ const fetchDestinationRadius = async ( endCoordinates) => {
     },
     body: JSON.stringify({
         locations: [endCoordinates],
-        range: [0, 0.2],
+        range: [0, 0.5],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -326,7 +326,7 @@ async function getRouteOptions(routes){
 
       routeOptions.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
         startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-        stopCoordinates, departureTimes, arrivalTimes})
+        stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed})
     }
     else{
       const temp = []
@@ -365,7 +365,7 @@ async function getRouteOptions(routes){
 
           temp.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
             startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-            stopCoordinates, departureTimes, arrivalTimes})
+            stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed})
         }
         else{
           const temp2 = []
@@ -402,7 +402,7 @@ async function getRouteOptions(routes){
 
               temp2.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
                 startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-                stopCoordinates, departureTimes, arrivalTimes})
+                stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed})
             }
           }
           temp.push(temp2)
