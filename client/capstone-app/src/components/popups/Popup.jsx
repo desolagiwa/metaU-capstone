@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, RadioGroup, Radio } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
 
-const Popup = ({ isOpen, onOpenChange, tripData }) => {
+const Popup = ({ isOpen, onOpenChange, tripData, onDelayConfirmed }) => {
   const navigate = useNavigate();
   const [action, setAction] = useState("");
   const [showChangeConfirmation, setShowChangeConfirmation] = useState(false);
   const [showReportConfirmation, setShowReportConfirmation] = useState(false);
   const [showBusSelection, setShowBusSelection] = useState(false);
+  const [showDelayOptions, setShowDelayOptions] = useState(false);
   const [selectedBus, setSelectedBus] = useState("");
-
 
   const handleContinue = () => {
     if (action === "change-trip") {
@@ -58,7 +58,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({isDelayed: true }),
+      body: JSON.stringify({ isDelayed: true }),
     })
       .then(response => response.json())
       .then(data => {
@@ -69,7 +69,7 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
       });
 
     setShowBusSelection(false);
-    onOpenChange(false);
+    setShowDelayOptions(true);
   };
 
   const renderBusOptions = () => {
@@ -96,6 +96,15 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
     return busOptions;
   };
 
+  const handleDelayOption = (option) => {
+    if (option === 'leave') {
+      navigate("/map");
+    } else {
+      onDelayConfirmed();
+      setShowDelayOptions(false);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -106,22 +115,26 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
         backdrop="blur"
       >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Have you started your trip?</ModalHeader>
-          <ModalBody>
-            <RadioGroup color="secondary" onChange={(e) => setAction(e.target.value)}>
-              <Radio value="continue">Yes</Radio>
-              <Radio value="change-trip" description="I want to change my trip">No</Radio>
-              <Radio value="delay-trip" description="My bus is late">No</Radio>
-            </RadioGroup>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="danger" variant="light" onPress={() => onOpenChange(false)}>
-              Close
-            </Button>
-            <Button color="secondary" onPress={handleContinue}>
-              Continue
-            </Button>
-          </ModalFooter>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Have you started your trip?</ModalHeader>
+              <ModalBody>
+                <RadioGroup color="secondary" onChange={(e) => setAction(e.target.value)}>
+                  <Radio value="continue">Yes</Radio>
+                  <Radio value="change-trip" description="I want to change my trip">No</Radio>
+                  <Radio value="delay-trip" description="My bus is late">No</Radio>
+                </RadioGroup>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={() => onOpenChange(false)}>
+                  Close
+                </Button>
+                <Button color="secondary" onPress={handleContinue}>
+                  Continue
+                </Button>
+              </ModalFooter>
+            </>
+          )}
         </ModalContent>
       </Modal>
 
@@ -189,8 +202,31 @@ const Popup = ({ isOpen, onOpenChange, tripData }) => {
             <Button color="danger" variant="light" onPress={() => setShowBusSelection(false)}>
               Cancel
             </Button>
-            <Button color="secondary" onPress={() => handleReport()}>
+            <Button color="secondary" onPress={handleReport}>
               Report
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={showDelayOptions}
+        onOpenChange={setShowDelayOptions}
+        isDismissable={false}
+        isKeyboardDismissDisabled={true}
+        backdrop="blur"
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">Bus Delay Reported</ModalHeader>
+          <ModalBody>
+            <p>The bus has been reported as delayed. Do you want to stay and wait or leave the trip?</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="light" onPress={() => handleDelayOption('leave')}>
+              Leave Trip
+            </Button>
+            <Button color="secondary" onPress={() => handleDelayOption('wait')}>
+              Stay and Wait
             </Button>
           </ModalFooter>
         </ModalContent>

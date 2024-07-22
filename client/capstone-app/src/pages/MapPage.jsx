@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from "react";
-import MapWithRoute from '../components/MapWithRoute'
-import "../styles/MapPage.css"
+import MapWithRoute from '../components/MapWithRoute';
+import "../styles/MapPage.css";
 import { midpoint } from "../../utils";
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CircularProgress, useDisclosure, Button} from "@nextui-org/react";
+import { CircularProgress, useDisclosure, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input } from "@nextui-org/react";
 import { convertCoordinates } from "../../utils";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
-import Popup from "../components/Popup";
+import Popup from "../components/popups/Popup";
 
 const MapPage = () => {
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  const {isOpen, onOpen, onOpenChange} = useDisclosure();
+  const [showBusHereButton, setShowBusHereButton] = useState(false);
+  const [showBusHereModal, setShowBusHereModal] = useState(false);
+  const [busWaitTime, setBusWaitTime] = useState("");
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const location = useLocation();
   const { directions, data, currentCoordinates, destinationCoordinates } = location.state || {};
   const [currentIndex, setCurrentIndex] = useState(0);
-  const navigate = useNavigate()
-
+  const navigate = useNavigate();
 
   if (!directions || !data) {
     return <div>No directions or data found</div>;
@@ -34,13 +36,27 @@ const MapPage = () => {
   useEffect(() => {
     setTimeout(() => {
       setShowPopup(true);
-    }, 5000)
-    onOpen()
+    }, 5000);
+    onOpen();
   }, []);
 
   const handleExit = () => {
-    navigate('/')
-  }
+    navigate('/');
+  };
+
+  const handleBusHere = () => {
+    setShowBusHereModal(true);
+  };
+
+  const handleBusWaitTimeSubmit = () => {
+    console.log(`Bus wait time: ${busWaitTime} minutes`);
+    setShowBusHereModal(false);
+    setShowBusHereButton(false);
+  };
+
+  const handleDelayConfirmed = () => {
+    setShowBusHereButton(true);
+  };
 
   return (
     <>
@@ -50,7 +66,7 @@ const MapPage = () => {
           <div className="w-full md:w-1/2 xl:w-2/3 p-4">
             <MapWithRoute
               directions={directions}
-              centerCoordinates={[currentCoordinates[1],currentCoordinates[0]]}
+              centerCoordinates={[currentCoordinates[1], currentCoordinates[0]]}
               routeData={data}
             />
           </div>
@@ -67,25 +83,53 @@ const MapPage = () => {
                 return (
                   <button
                     key={idx}
-                    className={
-                      currentIndex === idx ? "indicator" : "indicator indicator-inactive"
-                    }
+                    className={currentIndex === idx ? "indicator" : "indicator indicator-inactive"}
                     onClick={() => setCurrentIndex(idx)}
                   ></button>
                 );
               })}
             </span>
             <Button onClick={handleExit}>Leave trip</Button>
-            <Button>Report delay</Button>
+            <Button onClick={() => setShowBusHereButton(true)}>Report delay</Button>
           </div>
-          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange}  style={{ zIndex: 10000 }} tripData={data}/>}
-
+          {showPopup && <Popup isOpen={isOpen} onOpenChange={onOpenChange} onDelayConfirmed={handleDelayConfirmed} style={{ zIndex: 10000 }} tripData={data} />}
+          {showBusHereButton && <Button onClick={handleBusHere} color="secondary">My Bus is Here</Button>}
         </div>
       ) : (
-        <CircularProgress label="Loading..." />      )}
+        <CircularProgress label="Loading..." />
+      )}
 
+      <Modal
+        isOpen={showBusHereModal}
+        onOpenChange={setShowBusHereModal}
+        isDismissable={false}
+        isKeyboardDismissDisabled={true}
+        backdrop="blur"
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1">Bus Arrival Time</ModalHeader>
+          <ModalBody>
+            <p>How many minutes did the bus take to arrive?</p>
+            <Input
+              fullWidth
+              value={busWaitTime}
+              onChange={(e) => setBusWaitTime(e.target.value)}
+              type="number"
+              placeholder="Enter minutes"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" variant="light" onPress={() => setShowBusHereModal(false)}>
+              Cancel
+            </Button>
+            <Button color="secondary" onPress={handleBusWaitTimeSubmit}>
+              Submit
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
-  )
-}
+  );
+};
 
-export default MapPage
+export default MapPage;

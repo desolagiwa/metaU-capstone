@@ -75,7 +75,7 @@ const fetchCurrentRadius = async (startCoordinates) => {
       },
       body: JSON.stringify({
         locations: [startCoordinates],
-        range: [0, 0.5],
+        range: [0, 0.2],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -100,7 +100,7 @@ const fetchDestinationRadius = async ( endCoordinates) => {
     },
     body: JSON.stringify({
         locations: [endCoordinates],
-        range: [0, 0.5],
+        range: [0, 0.2],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -234,7 +234,7 @@ async function getConnectedStops(stop){
 }
 
 async function findRoutes(startStops, endStops, currentRoutes, directTrips){
-  let maxTransfers = 2
+  let maxTransfers = 1
   while (maxTransfers > 0) {
     for (const stop of endStops){
       const connectedStops = await getConnectedStops(stop)
