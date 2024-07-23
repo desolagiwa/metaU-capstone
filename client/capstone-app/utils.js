@@ -108,6 +108,7 @@ function parseRouteData(data) {
       departureTimes: trip.departureTimes,
       arrivalTimes: trip.arrivalTimes,
       isDelayed: trip.isDelayed,
+      delayedMin: trip.delayedMin,
       transfers: []
     };
 
@@ -120,6 +121,7 @@ function parseRouteData(data) {
     existingTrip.departureTimes = Array.from(new Set([...existingTrip.departureTimes, ...newTrip.departureTimes]));
     existingTrip.arrivalTimes = Array.from(new Set([...existingTrip.arrivalTimes, ...newTrip.arrivalTimes]));
     existingTrip.isDelayed =  existingTrip.isDelayed || newTrip.isDelayed
+    existingTrip.delayedMin = Math.max(existingTrip.delayedMin, newTrip.delayedMin)
   }
 
   // Recursive function to flatten nested trip data

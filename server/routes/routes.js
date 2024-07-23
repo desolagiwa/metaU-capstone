@@ -326,7 +326,7 @@ async function getRouteOptions(routes){
 
       routeOptions.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
         startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-        stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed})
+        stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed, delayedMin: currentTrip[0].delayedMin})
     }
     else{
       const temp = []
@@ -365,7 +365,7 @@ async function getRouteOptions(routes){
 
           temp.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
             startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-            stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed})
+            stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed, delayedMin: currentTrip[0].delayedMin})
         }
         else{
           const temp2 = []
@@ -402,7 +402,7 @@ async function getRouteOptions(routes){
 
               temp2.push({tripId: currentTrip[0].tripId, tripHeadsign: currentTrip[0].tripHeadsign, routeId: currentTrip[0].routeId, startStopId: startStop[0].stopId, endStopId: endStop[0].stopId,
                 startStopName: startStop[0].stopName, endStopName: endStop[0].stopName, startStopLat: startStop[0].stopLat, startStopLon: startStop[0].stopLon, endStopLat: endStop[0].stopLat, endStopLon: endStop[0].stopLon,
-                stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed})
+                stopCoordinates, departureTimes, arrivalTimes, isDelayed: currentTrip[0].isDelayed, delayedMin: currentTrip[0].delayedMin})
             }
           }
           temp.push(temp2)
@@ -427,6 +427,7 @@ router.post('/', async (req, res) => {
 
         const startStops = startPolygon.features ? getStopsInPolygon(stops, startPolygon.features[0].geometry, startCoordinates):[];
         const endStops = endPolygon.features ? getStopsInPolygon(stops, endPolygon.features[0].geometry, endCoordinates):[];
+
 
         const directRoutes = await findDirectRoutes(startStops, endStops)
         const directTrips = directRoutes.map(route => route[0].tripId);
