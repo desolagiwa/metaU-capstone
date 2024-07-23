@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import MapWithRoute from '../components/MapWithRoute';
 import "../styles/MapPage.css";
-import { midpoint } from "../../utils";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CircularProgress, useDisclosure, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input } from "@nextui-org/react";
-import { convertCoordinates } from "../../utils";
 import { BsArrowLeftCircleFill, BsArrowRightCircleFill } from "react-icons/bs";
 import Popup from "../components/popups/Popup";
 
@@ -13,7 +11,7 @@ const MapPage = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showBusHereButton, setShowBusHereButton] = useState(false);
   const [showBusHereModal, setShowBusHereModal] = useState(false);
-  const [busWaitTime, setBusWaitTime] = useState("");
+  const [busWaitTime, setBusWaitTime] = useState(0);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const location = useLocation();
@@ -49,7 +47,21 @@ const MapPage = () => {
   };
 
   const handleBusWaitTimeSubmit = () => {
-    console.log(`Bus wait time: ${busWaitTime} minutes`);
+    fetch(`http://localhost:5000/delay-trip/${data.tripIds[0]}/min`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ delayedMin: busWaitTime }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+
     setShowBusHereModal(false);
     setShowBusHereButton(false);
   };

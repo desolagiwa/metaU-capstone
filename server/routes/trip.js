@@ -16,10 +16,22 @@ router.put('/:tripId', async (req, res) => {
     const updatedTrip = await Prisma.Trip.update({
       where: { tripId: parseInt(tripId) },
       data: {
-       isDelayed
+       isDelayed,
       }
     })
     res.json(updatedTrip)
   })
+
+router.put('/:tripId/min', async (req, res) => {
+  const { tripId } = req.params
+  const { delayedMin } = req.body
+  const updatedTrip = await Prisma.Trip.update({
+    where: { tripId: parseInt(tripId) },
+    data: {
+      delayedMin : parseInt(delayedMin)
+    }
+  })
+  res.json(updatedTrip)
+})
 
 module.exports = router;
