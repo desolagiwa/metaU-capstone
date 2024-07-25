@@ -105,9 +105,9 @@ const RouteInfo = ({ data, directions, isOpen, onOpenChange, currentCoordinates,
             <>
               <ModalHeader className="flex flex-col gap-1" color="danger">Delayed Bus!</ModalHeader>
               <ModalBody>
-                <p>Are you sure you want to start this trip?</p>
-                {data.delayedMin > 0 && <p>Bus {data.routeId} is delayed by {data.delayedMin} minutes</p>}
+                {data.delayedMin > 0 && <p style={{color: "red"}}>Bus {data.routeId} is delayed by {data.delayedMin} minutes</p>}
                 {data.transfers.length > 0 && data.transfers[0].delayedMin > 0 && <p>Bus {data.transfers[0].routeId} is delayed by {data.transfers[0].isDelayed} minutes</p>}
+                <p>Are you sure you want to start this trip?</p>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
