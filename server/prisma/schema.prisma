@@ -46,6 +46,7 @@ model Trip {
   wheelchairAccessible Int @map("wheelchair_accessible")
   bikesAllowed Int @map("bikes_allowed")
   isDelayed Boolean @default(false)
+  delayedMin Int @default(0)
 
   @@map("trips")
 }

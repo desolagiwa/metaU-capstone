@@ -96,12 +96,16 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
        (<div>
             <div>{tripHeadsign} --- {transfers[0].tripHeadsign}</div>
             <div>{routeId} --- {transfers[0].routeId}</div>
+            {data.isDelayed === true || transfers[0].isDelayed === true &&
+            <p style={{color: "red"}}>Late!</p>}
             <Button onPress={onOpen} isOpen={isOpen} onOpenChange={onOpenChange}>See Trip Details</Button>
             <RouteInfo directions={tripDetails} isOpen={isOpen} onOpenChange={onOpenChange} data = {data} currentCoordinates={currentCoordinates} destinationCoordinates={destinationCoordinates}/>
        </div>):
        (<div>
             <div>{tripHeadsign}</div>
             <div>{routeId}</div>
+            {data.isDelayed === true &&
+            <p style={{color: "red"}}>Late!</p>}
             <Button onPress={onOpen}>See Trip Details</Button>
             <RouteInfo directions={tripDetails} isOpen={isOpen} onOpenChange={onOpenChange} data = {data} currentCoordinates={currentCoordinates} destinationCoordinates={destinationCoordinates}/>
         </div>)
