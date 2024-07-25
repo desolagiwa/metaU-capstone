@@ -164,6 +164,7 @@ async function findDirectRoutes(startStops, endStops, visitedStop =0, pastTripId
             departureTime: {
               gte: formattedCurrentTime,
               lte: formattedOneHourLater
+
             },
         }
     });
@@ -431,11 +432,18 @@ router.post('/', async (req, res) => {
 
         const directRoutes = await findDirectRoutes(startStops, endStops)
         const directTrips = directRoutes.map(route => route[0].tripId);
+        console.log("DIRECT ROUTES: ", directRoutes)
 
         const routes = await findRoutes(startStops, endStops, directRoutes, directTrips)
+        console.log(" ROUTES: ", routes)
+
 
         const modifiedRoutes= await handleTransfers(routes)
+        console.log("Modified ROUTES: ", modifiedRoutes)
+
         const routeOptions = await getRouteOptions(modifiedRoutes)
+        console.log("ROUTE OPTIONS: ", routeOptions)
+
 
         res.json(routeOptions);
       }
