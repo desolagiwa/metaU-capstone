@@ -34,12 +34,12 @@ const MapPage = () => {
   useEffect(() => {
     setTimeout(() => {
       setShowPopup(true);
-    }, 5000);
+    }, directions[0].features[0].properties.summary.duration*1000);
     onOpen();
   }, []);
 
   const handleExit = () => {
-    navigate('/');
+    navigate('/get-started');
   };
 
   const handleBusHere = () => {
@@ -83,6 +83,8 @@ const MapPage = () => {
             <MapWithRoute
               directions={directions}
               centerCoordinates={[currentCoordinates[1], currentCoordinates[0]]}
+              currentCoordinates = {[currentCoordinates[1], currentCoordinates[0]]}
+              destinationCoordinates ={[destinationCoordinates[1], destinationCoordinates[0]]}
               routeData={data}
             />
           </div>
