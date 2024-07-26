@@ -96,7 +96,7 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
        (<div>
             <div>{tripHeadsign} --- {transfers[0].tripHeadsign}</div>
             <div>{routeId} --- {transfers[0].routeId}</div>
-            {data.isDelayed === true || transfers[0].isDelayed === true &&
+            {data.isDelayed || transfers[0].isDelayed &&
             <p style={{color: "red"}}>Late!</p>}
             <Button onPress={onOpen} isOpen={isOpen} onOpenChange={onOpenChange}>See Trip Details</Button>
             <RouteInfo directions={tripDetails} isOpen={isOpen} onOpenChange={onOpenChange} data = {data} currentCoordinates={currentCoordinates} destinationCoordinates={destinationCoordinates}/>
@@ -104,7 +104,7 @@ const RouteCard =  ({tripIds, tripHeadsign, routeId, startStopId, endStopId, sta
        (<div>
             <div>{tripHeadsign}</div>
             <div>{routeId}</div>
-            {data.isDelayed === true &&
+            {data.isDelayed &&
             <p style={{color: "red"}}>Late!</p>}
             <Button onPress={onOpen}>See Trip Details</Button>
             <RouteInfo directions={tripDetails} isOpen={isOpen} onOpenChange={onOpenChange} data = {data} currentCoordinates={currentCoordinates} destinationCoordinates={destinationCoordinates}/>

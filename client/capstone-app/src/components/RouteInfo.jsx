@@ -1,23 +1,25 @@
 import React, { useState } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
-import { getTimeDifference, encodeUrlParams } from "../../utils";
+import { getTimeDifference, encodeUrlParams, addMinutesToTime, getCurrentTimeFormatted } from "../../utils";
 
 const RouteInfo = ({ data, directions, isOpen, onOpenChange, currentCoordinates, destinationCoordinates }) => {
   const [scrollBehavior, setScrollBehavior] = useState("inside");
   const [isDelayedBusModalOpen, setIsDelayedBusModalOpen] = useState(false);
   const navigate = useNavigate();
-  const timeDifference = getTimeDifference(data.departureTimes, data.arrivalTimes);
-
+  const timeDifference = getTimeDifference(data.departureTime, data.arrivalTime);
+  let currentTime = getCurrentTimeFormatted()
 
   const renderInstruction = (instruction, index) => {
     const { type, distance, duration, stops, endStopName } = instruction;
 
     switch (type) {
       case 'walk':
-        return <h2 key={index}>Walk {distance} miles to {endStopName} ({Math.floor(duration / 60)} mins)</h2>;
+        currentTime = addMinutesToTime(currentTime,  Math.floor(duration/60))
+        return <h2 key={index}>Walk {distance} miles to {endStopName} ({Math.floor(duration / 60)} mins)   {currentTime}</h2>;
       case 'ride':
-        return <h2 key={index}>Ride {stops} stops to {endStopName} ({timeDifference} mins)</h2>;
+        currentTime = addMinutesToTime(currentTime,  timeDifference)
+        return <h2 key={index}>Ride {stops} stops to {endStopName} ({timeDifference} mins)   {currentTime}</h2>;
       default:
         return null;
     }
@@ -106,8 +108,8 @@ const RouteInfo = ({ data, directions, isOpen, onOpenChange, currentCoordinates,
               <ModalHeader className="flex flex-col gap-1" color="danger">Delayed Bus!</ModalHeader>
               <ModalBody>
                 <p>Are you sure you want to start this trip?</p>
-                {data.delayedMin > 0 && <p>Bus {data.routeId} is delayed by {data.delayedMin} minutes</p>}
-                {data.transfers.length > 0 && data.transfers[0].delayedMin > 0 && <p>Bus {data.transfers[0].routeId} is delayed by {data.transfers[0].isDelayed} minutes</p>}
+                {data.delayMin > 0 && <p>Bus {data.routeId} is delayed by {data.delayMin} minutes</p>}
+                {data.transfers.length > 0 && data.transfers[0].delayMin > 0 && <p>Bus {data.transfers[0].routeId} is delayed by {data.transfers[0].delayMin} minutes</p>}
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>

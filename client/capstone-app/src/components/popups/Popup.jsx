@@ -53,7 +53,7 @@ const Popup = ({ isOpen, onOpenChange, tripData, onDelayConfirmed }) => {
   };
 
   const handleReport = () => {
-    fetch(`http://localhost:5000/delay-trip/${selectedBus}`, {
+    fetch(`http://localhost:5000/delay-trip/${selectedBus}/report`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ const Popup = ({ isOpen, onOpenChange, tripData, onDelayConfirmed }) => {
 
     // Add the main trip bus
     busOptions.push(
-      <Radio value={tripData.tripIds[0]}>
+      <Radio value={tripData.tripId}>
         {tripData.routeId}: {tripData.tripHeadsign}
       </Radio>
     );
@@ -86,7 +86,7 @@ const Popup = ({ isOpen, onOpenChange, tripData, onDelayConfirmed }) => {
     if (tripData.transfers && tripData.transfers.length > 0) {
       tripData.transfers.forEach((transfer) => {
         busOptions.push(
-          <Radio value={transfer.tripIds[0]}>
+          <Radio value={transfer.tripId}>
             {transfer.routeId}: {transfer.tripHeadsign}
           </Radio>
         );

@@ -47,12 +47,16 @@ const MapPage = () => {
   };
 
   const handleBusWaitTimeSubmit = () => {
-    fetch(`http://localhost:5000/delay-trip/${data.tripIds[0]}/min`, {
-      method: 'PUT',
+    fetch(`http://localhost:5000/delay-trip/delay-time`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ delayedMin: busWaitTime }),
+      body: JSON.stringify({
+        tripId:data.tripId,
+        routeId: data.routeId,
+        delayMin: busWaitTime
+      }),
     })
     .then(response => response.json())
     .then(data => {
