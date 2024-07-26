@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link, useParams } from "react-router-dom";
+import { useNavigate, Link, useParams, useLocation } from "react-router-dom";
 import RouteCard from "../components/RouteCard";
 import { parseRouteData, convertCoordinates } from "../../utils";
 import { CircularProgress } from "@nextui-org/react";
@@ -13,13 +13,18 @@ const Routes = () => {
     const [loading, setLoading] = useState(true);
     const { currentCoordinates, destinationCoordinates } = useParams();
 
+    const location = useLocation();
+    const { walkingTransfers, maxTransfers } = location.state || {};
+
     const startCoordArray = convertCoordinates(currentCoordinates);
     const endCoordArray = convertCoordinates(destinationCoordinates);
 
     const fetchRouteOptions = async () => {
         const temp = {
             'startCoordinates': startCoordArray,
-            'endCoordinates': endCoordArray
+            'endCoordinates': endCoordArray,
+            "walkingTransfers": walkingTransfers,
+            "maxTransfers": maxTransfers
         };
         try {
             const response = await fetch("http://localhost:5000/get-routes", {

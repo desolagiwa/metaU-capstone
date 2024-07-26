@@ -46,7 +46,7 @@ model Trip {
   wheelchairAccessible Int @map("wheelchair_accessible")
   bikesAllowed Int @map("bikes_allowed")
   isDelayed Boolean @default(false)
-  delayedMin Int?
+  delayMin Int?
   DelayReports DelayReport[]
 
   @@map("trips")
@@ -84,5 +84,4 @@ model DelayReport {
   delayMin Int @default(0)
   createdAt DateTime @default(now())
   Trip Trip @relation(fields: [tripId], references: [tripId])
-
 }

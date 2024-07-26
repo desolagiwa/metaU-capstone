@@ -95,7 +95,7 @@ function parseRouteData(data) {
 
   function processTrip(trip) {
     const processedTrip = {
-      tripIds: [trip.tripId],
+      tripId: trip.tripId,
       tripHeadsign: trip.tripHeadsign,
       routeId: trip.routeId,
       startStopId: trip.startStopId,
@@ -105,10 +105,10 @@ function parseRouteData(data) {
       stopCoordinates: trip.stopCoordinates,
       startStopCoordinates: [trip.startStopLon, trip.startStopLat],
       endStopCoordinates: [trip.endStopLon, trip.endStopLat],
-      departureTimes: trip.departureTimes,
-      arrivalTimes: trip.arrivalTimes,
+      departureTime: trip.departureTimes[0],
+      arrivalTime: trip.arrivalTimes[0],
       isDelayed: trip.isDelayed,
-      delayedMin: trip.delayedMin,
+      delayMin: trip.delayMin,
       transfers: []
     };
 
@@ -117,11 +117,14 @@ function parseRouteData(data) {
 
   // Helper function to check and merge similar trips
   function mergeTrips(existingTrip, newTrip) {
-    existingTrip.tripIds = Array.from(new Set([...existingTrip.tripIds, ...newTrip.tripIds]))
-    existingTrip.departureTimes = Array.from(new Set([...existingTrip.departureTimes, ...newTrip.departureTimes]));
-    existingTrip.arrivalTimes = Array.from(new Set([...existingTrip.arrivalTimes, ...newTrip.arrivalTimes]));
-    existingTrip.isDelayed =  existingTrip.isDelayed || newTrip.isDelayed
-    existingTrip.delayedMin = Math.max(existingTrip.delayedMin, newTrip.delayedMin)
+    if (newTrip.departureTime < existingTrip.departureTime ||
+      (newTrip.departureTime === existingTrip.departureTime && newTrip.tripId < existingTrip.tripId)){
+      existingTrip.tripId = newTrip.tripId;
+      existingTrip.departureTime = newTrip.departureTime;
+      existingTrip.arrivalTime = newTrip.arrivalTime;
+      existingTrip.isDelayed = newTrip.isDelayed;
+      existingTrip.delayMin = newTrip.delayMin;
+    }
   }
 
   // Recursive function to flatten nested trip data
@@ -196,18 +199,42 @@ function convertCoordinates(coordString) {
   return coordString.split(',').map(Number);
 }
 
-function getTimeDifference(departureTimes, arrivalTimes){
-  const time1Minutes = parseInt(departureTimes[0].substring(0, 2)) * 60 + parseInt(departureTimes[0].substring(3, 5));
-const time2Minutes = parseInt(arrivalTimes[0].substring(0, 2)) * 60 + parseInt(arrivalTimes[0].substring(3, 5));
-const differenceMinutes = time2Minutes - time1Minutes;
-return differenceMinutes
+function getTimeDifference(departureTime, arrivalTime){
+  const time1Minutes = parseInt(departureTime.substring(0, 2)) * 60 + parseInt(departureTime.substring(3, 5));
+  const time2Minutes = parseInt(arrivalTime.substring(0, 2)) * 60 + parseInt(arrivalTime.substring(3, 5));
+  const differenceMinutes = time2Minutes - time1Minutes;
+  return differenceMinutes
 }
 
 function encodeUrlParams(params){
   return `startLat%3A${params[0][0]}%2CstartLon%3A${params[0][1]}/endLat%3A${params[1][0]}%2CendLon%3A${params[1][1]}`
 }
 
+function addMinutesToTime(timeString, minutesToAdd) {
+  const timeParts = timeString.split(':').map(Number);
+  const [hours, minutes, seconds] = timeParts.length === 3 ? timeParts : [...timeParts, 0];
 
+  const date = new Date();
+  date.setHours(hours);
+  date.setMinutes(minutes);
+  date.setSeconds(seconds);
 
+  date.setMinutes(date.getMinutes() + minutesToAdd);
 
-export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates, getTimeDifference, encodeUrlParams}
+  const newHours = String(date.getHours()).padStart(2, '0');
+  const newMinutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${newHours}:${newMinutes}`;
+}
+
+function getCurrentTimeFormatted() {
+  const date = new Date();
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+export { parseSearchData, pointInPolygon, getStopsInPolygon, midpoint, parseRouteData, getRandomColor, convertCoordinates, getTimeDifference, encodeUrlParams, addMinutesToTime, getCurrentTimeFormatted}

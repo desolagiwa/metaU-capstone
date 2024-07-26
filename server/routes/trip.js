@@ -19,13 +19,17 @@ router.put('/:tripId/report', async (req, res) => {
 });
 
 router.post('/delay-time', async (req, res) => {
-  const { tripId, routeId, delayedMin } = req.body;
+  const { tripId, routeId, delayMin } = req.body;
   try {
     const newReport = await Prisma.DelayReport.create({
       data: {
-        tripId: parseInt(tripId),
-        routeId: parseInt(routeId),
-        delayedMin: parseInt(delayedMin)
+        routeId: routeId,
+        delayMin: parseInt(delayMin),
+        Trip: {
+          connect: {
+            tripId: parseInt(tripId)
+          }
+        }
       }
     });
     await updateTripDelayTime(tripId);
@@ -41,7 +45,7 @@ router.get('/:tripId/delay-time', async (req, res) => {
   try {
     // Calculate the weighted average delay time based on all reports for this trip
     const weightedAverageDelay = await calculateWeightedAverageDelay(tripId);
-    res.json({ delayedMin: Math.round(weightedAverageDelay) });
+    res.json({ delayMin: Math.round(weightedAverageDelay) });
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
@@ -51,7 +55,7 @@ router.get('/:tripId/delay-time', async (req, res) => {
 // Function to calculate the weighted average delay time
 const calculateWeightedAverageDelay = async (tripId) => {
   const delayReports = await Prisma.DelayReport.findMany({
-    where: { tripId: parseInt(tripId), delayedMin: { not: null } },
+    where: { tripId: parseInt(tripId), delayMin: { not: 0 } },
     orderBy: { createdAt: 'desc' }
   });
   // Apply weighted average calculation
@@ -62,7 +66,7 @@ const calculateWeightedAverageDelay = async (tripId) => {
     const timeDiff = (now - report.createdAt) / (1000 * 60); // time difference in minutes
     const weight = Math.exp(-timeDiff / 60); // weight decreases with time
     totalWeight += weight;
-    weightedSum += report.delayedMin * weight;
+    weightedSum += report.delayMin * weight;
   });
   return weightedSum / totalWeight;
 };
@@ -72,7 +76,7 @@ const updateTripDelayTime = async (tripId) => {
   const weightedAverageDelay = await calculateWeightedAverageDelay(tripId);
   await Prisma.Trip.update({
     where: { tripId: parseInt(tripId) },
-    data: { delayedMin: Math.round(weightedAverageDelay) }
+    data: { delayMin: Math.round(weightedAverageDelay) }
   });
 };
 
