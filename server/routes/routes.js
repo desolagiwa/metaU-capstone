@@ -75,7 +75,7 @@ const fetchCurrentRadius = async (startCoordinates) => {
       },
       body: JSON.stringify({
         locations: [startCoordinates],
-        range: [0, 0.2],
+        range: [0, 0.5],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -100,7 +100,7 @@ const fetchDestinationRadius = async ( endCoordinates) => {
     },
     body: JSON.stringify({
         locations: [endCoordinates],
-        range: [0, 0.2],
+        range: [0, 0.5],
         location_type: 'start',
         range_type: 'distance',
         units: 'mi'
@@ -432,19 +432,13 @@ router.post('/', async (req, res) => {
         const startStops = startPolygon.features ? getStopsInPolygon(stops, startPolygon.features[0].geometry, startCoordinates):[];
         const endStops = endPolygon.features ? getStopsInPolygon(stops, endPolygon.features[0].geometry, endCoordinates):[];
 
-
         const directRoutes = await findDirectRoutes(startStops, endStops)
         const directTrips = directRoutes.map(route => route[0].tripId);
-        console.log("DIRECT ROUTES: ", directRoutes)
 
         const routes = await findRoutes(startStops, endStops, directRoutes, directTrips, maxTransfers, walkingTransfers)
 
         const modifiedRoutes= await handleTransfers(routes)
-        console.log("Modified ROUTES: ", modifiedRoutes)
-
         const routeOptions = await getRouteOptions(modifiedRoutes)
-        console.log("ROUTE OPTIONS: ", routeOptions)
-
 
         res.json(routeOptions);
       }

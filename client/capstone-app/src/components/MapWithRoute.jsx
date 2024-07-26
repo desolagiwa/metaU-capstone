@@ -1,9 +1,9 @@
 import React from 'react';
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getRandomColor } from '../../utils';
 
-const MapWithRoute = ({ directions, centerCoordinates }) => {
+const MapWithRoute = ({ directions, centerCoordinates, currentCoordinates, destinationCoordinates }) => {
   const onEachFeature = (feature, layer) => {
     if (feature.properties && feature.properties.summary) {
       layer.bindPopup(
@@ -37,6 +37,8 @@ const MapWithRoute = ({ directions, centerCoordinates }) => {
         url="https://b.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
+      <Marker position={currentCoordinates}></Marker>
+      <Marker position={destinationCoordinates}></Marker>
       {directions.map((direction, index) => (
         <GeoJSON key={index} data={direction} onEachFeature={onEachFeature} />
       ))}
