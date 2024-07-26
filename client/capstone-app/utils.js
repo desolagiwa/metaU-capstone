@@ -90,9 +90,12 @@ function midpoint(coord1, coord2) {
 }
 
 function parseRouteData(data) {
+  // Initialize an empty array to hold processed trip data
   let tripMaps = [];
+  // Initialize a Set to keep track of unique trips
   const uniqueTrips = new Set();
 
+  // Function to process individual trip data and format it into a consistent structure
   function processTrip(trip) {
     const processedTrip = {
       tripId: trip.tripId,
@@ -109,14 +112,15 @@ function parseRouteData(data) {
       arrivalTime: trip.arrivalTimes[0],
       isDelayed: trip.isDelayed,
       delayMin: trip.delayMin,
-      transfers: []
+      transfers: []  // Initialize an empty array to hold transfer data
     };
 
     return processedTrip;
   }
 
-  // Helper function to check and merge similar trips
+  // Helper function to merge new trip data into existing trip data if they are similar
   function mergeTrips(existingTrip, newTrip) {
+    // If the new trip has an earlier departure time or same departure time but a lower tripId, update the existing trip
     if (newTrip.departureTime < existingTrip.departureTime ||
       (newTrip.departureTime === existingTrip.departureTime && newTrip.tripId < existingTrip.tripId)){
       existingTrip.tripId = newTrip.tripId;
@@ -127,13 +131,16 @@ function parseRouteData(data) {
     }
   }
 
-  // Recursive function to flatten nested trip data
+  // Recursive function to flatten nested trip data structures
   function flattenTrips(data) {
     data.forEach(item => {
       if (Array.isArray(item)) {
+        // If the item is an array, call flattenTrips recursively
         flattenTrips(item);
       } else {
+        // Process the trip data into a standardized format
         const processedTrip = processTrip(item);
+        // Check if the trip already exists in tripMaps
         const existingTrip = tripMaps.find(t =>
           t.startStopId === processedTrip.startStopId &&
           t.endStopId === processedTrip.endStopId &&
@@ -142,40 +149,51 @@ function parseRouteData(data) {
         );
 
         if (existingTrip) {
+          // If an existing trip is found, merge the new trip data with it
           mergeTrips(existingTrip, processedTrip);
         } else {
+          // If no existing trip is found, add the new trip to tripMaps
           tripMaps.push(processedTrip);
         }
       }
     });
   }
 
+  // Function to link trips that are transfers from one to another
   function linkTransfers() {
+    // Initialize an array to keep track of trips that should be removed after linking
     const tripsToRemove = [];
 
     tripMaps.forEach(trip => {
       tripMaps.forEach(possibleTransfer => {
+        // Check if the end stop of the current trip matches the start stop of another trip
         if (trip.endStopId === possibleTransfer.startStopId) {
+          // Ensure the transfer is not already included in the trip's transfers
           if (!trip.transfers.some(t =>
             t.startStopId === possibleTransfer.startStopId &&
             t.endStopId === possibleTransfer.endStopId
           )) {
+            // Add the transfer to the trip's transfers array
             trip.transfers.push({ ...possibleTransfer });  // Ensure a new object is created for the transfer
+            // Mark the transfer trip for removal
             tripsToRemove.push(possibleTransfer);
           }
         }
       });
     });
-
+    // Remove trips that are marked for removal
     tripMaps = tripMaps.filter(trip => !tripsToRemove.includes(trip));
   }
 
-  // Start processing
+  // Start processing the input data
   flattenTrips(data);
+  // Link transfers between trips
   linkTransfers();
 
+  // Return the processed trip maps
   return tripMaps;
 }
+
 
 
 function getRandomColor() {
